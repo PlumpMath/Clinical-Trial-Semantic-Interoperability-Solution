@@ -1,0 +1,355 @@
+<template version="1.00" id="002" description="Template for querying administrations of substance">
+	<templateClass>SubstanceAdministration</templateClass>
+	<queryLanguage>SQL</queryLanguage>
+	<rimClasses>
+		<rimRelationship>
+			<rimClass>SubstanceAdministration</rimClass>
+			<rimAttribute>code</rimAttribute>
+		</rimRelationship>
+	</rimClasses>
+	<inputConcept>%concept%</inputConcept>
+	<normalizedOutput>%normalform%</normalizedOutput>
+	<sqlQuery>
+		<![CDATA[
+			SELECT DISTINCT a.id AS id , a.code AS code , v_p.id AS patientId , v_p.birthTime AS birthTime , a.effectiveTime_start AS effectiveTime_start , a.effectiveTime_end AS effectiveTime_end $$optionalAttributes$$
+			FROM 
+			act a 
+			INNER JOIN participation p ON (a.id = p.actId)
+			INNER JOIN v_person v_p ON (p.entityId = v_p.id) 
+			$$OptionalStructures$$
+			WHERE ((a.code IN (isAnySubclassOf(%SubstanceAdministration_code%))) $$OptionalFilters$$)
+			;
+		]]>
+	</sqlQuery>
+	<optionals>
+		<OptionalStructure id="classCode">
+			<OptionalHeaderAttributes id="classCode" tag="$$optionalAttributes$$">, a.classCode AS classCode
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="classCode" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="classCode" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="subClassCode">
+			<OptionalHeaderAttributes id="subClassCode" tag="$$optionalAttributes$$">, a.subClassCode AS subClassCode
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="subClassCode" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="subClassCode" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="moodCode">
+			<OptionalHeaderAttributes id="moodCode" tag="$$optionalAttributes$$">, a.moodCode AS moodCode
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="moodCode" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="moodCode" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="codeVocId">
+			<OptionalHeaderAttributes id="codeVocId" tag="$$optionalAttributes$$">, a.codeVocId AS codeVocId
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="codeVocId" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="codeVocId" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="codeOrig">
+			<OptionalHeaderAttributes id="codeOrig" tag="$$optionalAttributes$$">, a.codeOrig AS codeOrig
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="codeOrig" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="codeOrig" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="codeOrigVocId">
+			<OptionalHeaderAttributes id="codeOrigVocId" tag="$$optionalAttributes$$">, a.codeOrigVocId AS codeOrigVocId
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="codeOrigVocId" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="codeOrigVocId" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="actionNegationInd">
+			<OptionalHeaderAttributes id="actionNegationInd" tag="$$optionalAttributes$$">, a.actionNegationInd AS actionNegationInd
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="actionNegationInd" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="actionNegationInd" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="title">
+			<OptionalHeaderAttributes id="title" tag="$$optionalAttributes$$">, a.title AS title
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="title" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="title" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="text">
+			<OptionalHeaderAttributes id="text" tag="$$optionalAttributes$$">, a.text AS text
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="text" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="text" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="statusCode">
+			<OptionalHeaderAttributes id="statusCode" tag="$$optionalAttributes$$">, a.statusCode AS statusCode
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="statusCode" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="statusCode" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="activityTime">
+			<OptionalHeaderAttributes id="activityTime" tag="$$optionalAttributes$$">, a.activityTime AS activityTime
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="activityTime" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="activityTime" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="availabilityTime">
+			<OptionalHeaderAttributes id="availabilityTime" tag="$$optionalAttributes$$">, a.availabilityTime AS availabilityTime
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="availabilityTime" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="availabilityTime" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="uncertaintyCode">
+			<OptionalHeaderAttributes id="uncertaintyCode" tag="$$optionalAttributes$$">, a.uncertaintyCode AS uncertaintyCode
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="uncertaintyCode" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="uncertaintyCode" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="substanceAdministration">
+			<OptionalHeaderAttributes id="substanceAdministration" tag="$$optionalAttributes$$">, s.routeCode AS routeCode, s.routeCodeVocId AS routeCodeVocId, s.routeCodeTitle AS routeTitle, s.doseQuantity AS doseQuantity, s.doseQuantityUnits AS doseQuantityUnits, s.rateQuantity AS rateQuantity, s.rateQuantityUnits AS rateQuantityUnits, s.doseCheckQuantity AS doseCheckQuantity, s.doseCheckQuantityUnits AS doseCheckQuantityUnits, s.periodIntervalTime AS periodIntervalTime,  
+s.periodIntervalUnits AS periodIntervalUnits $$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="substanceAdministration" tag = "$$OptionalStructures$$">			
+				<![CDATA[
+					INNER JOIN substanceadministration s ON (a.id = s.id)
+					$$OptionalStructures$$
+				]]>		
+			</optionalTable>
+			<OptionalFilter id="substanceAdministration" tag="$$OptionalFilters$$">
+				<queryFilter>
+					<![CDATA[
+						AND (s.doseQuantity $$operator$$ $$comparedValue$$) $$OptionalFilters$$
+					]]>
+				</queryFilter>
+				<filterAttributes>
+					<attribute id="operator:eq" tag="$$operator$$">=</attribute>
+					<attribute id="operator:nq" tag="$$operator$$">!=</attribute>
+					<attribute id="operator:lt" tag="$$operator$$"><![CDATA[<]]></attribute>
+					<attribute id="operator:gt" tag="$$operator$$">></attribute>
+					<attribute id="operator:lteq" tag="$$operator$$"><![CDATA[<=]]></attribute>
+					<attribute id="operator:gteq" tag="$$operator$$">>=</attribute>
+					<attribute id="value" tag="$$comparedValue$$"></attribute>
+				</filterAttributes>				
+			</OptionalFilter>						
+		</OptionalStructure>
+		<OptionalStructure id="methodCode">
+			<OptionalHeaderAttributes id="methodCode" tag="$$optionalAttributes$$">, m.code AS methodCode, m.title AS methodCodeTitle $$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="methodCode" tag = "$$OptionalStructures$$">			
+				<![CDATA[
+					INNER JOIN actmethodcode m ON (a.id = m.id)
+					$$OptionalStructures$$
+				]]>		
+			</optionalTable>
+			<OptionalFilter id="methodCode" tag="$$OptionalFilters$$">
+				<queryFilter>
+					<![CDATA[
+						AND (m.code IN (isAnySubclassOf(%SubstanceAdministration_methodCode%))) $$OptionalFilters$$
+					]]>
+				</queryFilter>	
+				<filterAttributes>
+					<attribute id="value" tag="%SubstanceAdministration_methodCode%"></attribute>
+				</filterAttributes>
+			</OptionalFilter>						
+		</OptionalStructure>
+		<OptionalStructure id="targetSiteCode">
+			<OptionalHeaderAttributes id="targetSiteCode" tag="$$optionalAttributes$$">, t.code AS targetSiteCode, t.title AS targetSiteCodeTitle $$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="targetSiteCode" tag = "$$OptionalStructures$$">			
+				<![CDATA[
+					INNER JOIN acttargetsitecode t ON (a.id = t.id)
+					$$OptionalStructures$$
+				]]>		
+			</optionalTable>
+			<OptionalFilter id="targetSiteCode" tag="$$OptionalFilters$$">
+				<queryFilter>
+					<![CDATA[
+						AND (t.code IN (isAnySubclassOf(%SubstanceAdministration_targetSiteCode%))) $$OptionalFilters$$
+					]]>
+				</queryFilter>	
+				<filterAttributes>
+					<attribute id="value" tag="%SubstanceAdministration_targetSiteCode%"></attribute>
+				</filterAttributes>
+			</OptionalFilter>						
+		</OptionalStructure>
+		<OptionalStructure id="approachSiteCode">
+			<OptionalHeaderAttributes id="approachSiteCode" tag="$$optionalAttributes$$">, ap.code AS approachSiteCode, ap.codeVocId AS approachSiteCodeVocId, ap.title AS approachSiteCodeTitle $$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="approachSiteCode" tag = "$$OptionalStructures$$">			
+				<![CDATA[
+					INNER JOIN actprocedureapproachsitecode ap ON (a.id = ap.id)
+					$$OptionalStructures$$
+				]]>		
+			</optionalTable>
+			<OptionalFilter id="approachSiteCode" tag="$$OptionalFilters$$">
+				<queryFilter>
+					<![CDATA[
+						AND (ap.code IN (isAnySubclassOf(%SubstanceAdministration_approachSiteCode%))) $$OptionalFilters$$
+					]]>
+				</queryFilter>
+				<filterAttributes>
+					<attribute id="value" tag="%SubstanceAdministration_approachSiteCode%"></attribute>
+				</filterAttributes>				
+			</OptionalFilter>						
+		</OptionalStructure>	
+		<OptionalStructure id="entity">
+			<OptionalHeaderAttributes id="entity" tag="$$optionalAttributes$$">, e.id AS entityId, e.classCode AS entityClassCode, e.determinerCode AS entityDeterminerCode, e.code AS entityCode, e.title AS entityTitle $$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="entity" tag = "$$OptionalStructures$$">			
+				<![CDATA[
+					INNER JOIN participation p2 ON (a.id = p2.actId)
+					INNER JOIN entity e ON (p2.entityId = e.id)
+					$$OptionalStructures$$
+				]]>		
+			</optionalTable>
+			<OptionalFilter id="entity" tag="$$OptionalFilters$$">
+				<queryFilter>
+					<![CDATA[
+						AND (e.code != '337915000' AND e.code IN (isAnySubclassOf(%Entity_code%))) $$OptionalFilters$$
+					]]>
+				</queryFilter>	
+				<filterAttributes>
+					<attribute id="value" tag="%Entity_code%"></attribute>
+				</filterAttributes>
+			</OptionalFilter>						
+		</OptionalStructure>
+		<OptionalStructure id="relationShipFilter">
+			<OptionalHeaderAttributes id="relationShipFilter" tag="$$optionalAttributes$$">, r.idB AS idB $$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="relationShipFilter" tag = "$$OptionalStructures$$">	
+				<![CDATA[
+					INNER JOIN actrelationship r ON (a.id = r.idA)
+					$$OptionalStructures$$
+				]]>	
+			</optionalTable>
+			<OptionalFilter id="relationShipFilter" tag="$$OptionalFilters$$">
+				<queryFilter>
+					<![CDATA[
+						AND (r.typeCode = "$$comparator$$" AND r.idB = "$$comparedValue$$") $$OptionalFilters$$
+					]]>
+				</queryFilter>			
+				<filterAttributes>
+					<attribute id="relationship:belongTo" tag="$$comparator$$">belongTo</attribute>
+					<attribute id="value" tag="$$comparedValue$$"></attribute>
+				</filterAttributes>
+			</OptionalFilter>		
+		</OptionalStructure>
+		<OptionalStructure id="patientFilter">
+			<OptionalHeaderAttributes id="patientFilter" tag="$$optionalAttributes$$">$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="patientFilter" tag = "$$OptionalStructures$$">	
+				$$OptionalStructures$$
+			</optionalTable>
+			<OptionalFilter id="patientFilter" tag="$$OptionalFilters$$">
+				<queryFilter>
+					<![CDATA[
+						AND (v_p.id = "$$comparedValue$$") $$OptionalFilters$$
+					]]>
+				</queryFilter>			
+				<filterAttributes>
+					<attribute id="value" tag="$$comparedValue$$"></attribute>
+				</filterAttributes>
+			</OptionalFilter>		
+		</OptionalStructure>
+		<OptionalStructure id="void">
+			<OptionalHeaderAttributes id="void" tag="$$optionalAttributes$$"></OptionalHeaderAttributes>
+			<optionalTable id="void" tag = "$$OptionalStructures$$"></optionalTable>
+			<OptionalFilter id="void" tag="$$OptionalFilters$$">
+				<queryFilter></queryFilter>
+				<filterAttributes></filterAttributes>
+			</OptionalFilter>
+		</OptionalStructure>	
+	</optionals>
+</template>

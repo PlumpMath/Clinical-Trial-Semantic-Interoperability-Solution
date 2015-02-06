@@ -1,0 +1,6 @@
+CREATE USER 'testCV'@'localhost' IDENTIFIED BY 'testCV';
+GRANT ALL ON `%testcv%`.* TO 'testCV'@'localhost';
+GRANT ALL ON normalization_errors.* TO 'testCV'@'localhost';
+GRANT ALL ON translations.* TO 'testCV'@'localhost';
+GRANT CREATE ON mydb.* TO 'testCV'@'localhost';
+FLUSH PRIVILEGES;

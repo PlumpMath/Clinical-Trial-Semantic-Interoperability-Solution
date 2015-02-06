@@ -1,0 +1,1 @@
+mysql --user=testCV --password=testCV --host=localhost testcv_tmp_cf6e6de4381742e787d4219ee2c59d8d < .\files\HL7_MySQL_Schema_2.6.3.sql

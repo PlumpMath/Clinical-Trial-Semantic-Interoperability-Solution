@@ -1,0 +1,2 @@
+mysql --user=testCV --password=testCV --host=localhost testcv < ..\webapps\DataPushService\files\dump_testCV.sql
+mysql --user=testCV --password=testCV --host=localhost normalized_testcv < ..\webapps\DataPushService\files\dump_normalized_testCV.sql

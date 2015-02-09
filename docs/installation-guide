@@ -120,14 +120,14 @@ http://localhost:8080/QUeryExecutionService/services/SemanticInteroperabilityLay
 
 NOTE: This service contains a stub to CoreDataset Service on this url: http://localhost:8080/CoreDatasetService/services/CoreDatasetService?wsdl
 
-5. Query Builder service deployment
+5. Query Normalization service deployment
 
 Query Builder service allows build queries to retrieve data related with SNOMED-CT concepts received as parameters.  
-Copy “QueryBuilderService.war” file on your tomcat webapps folder and restart tomcat with the correct permissions, tomcat7 user and RW flags.
+Copy “QueryNormalizationService.war” file on your tomcat webapps folder and restart tomcat with the correct permissions, tomcat7 user and RW flags.
 Use the wsdl file to generate a service client.
 
 If the process works it generates:
-http:// localhost:8080/QueryBuilderService/services/QueryBuilderService?wsdl
+http:// localhost:8080/QueryNormalizationService/services/QueryNormalizationService?wsdl
 
 NOTE: This service contains a stub to CoreDataset Service on this url: http://localhost:8080/CoreDatasetService/services/CoreDatasetService?wsdl
 

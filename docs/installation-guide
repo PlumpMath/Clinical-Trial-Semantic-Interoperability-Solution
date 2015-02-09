@@ -122,7 +122,7 @@ NOTE: This service contains a stub to CoreDataset Service on this url: http://lo
 
 5. Query Normalization service deployment
 
-Query Builder service allows build queries to retrieve data related with SNOMED-CT concepts received as parameters.  
+Query Normalization service allows build queries to retrieve data related with SNOMED-CT concepts received as parameters.  
 Copy “QueryNormalizationService.war” file on your tomcat webapps folder and restart tomcat with the correct permissions, tomcat7 user and RW flags.
 Use the wsdl file to generate a service client.
 

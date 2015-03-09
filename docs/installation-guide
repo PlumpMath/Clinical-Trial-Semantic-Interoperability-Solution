@@ -69,26 +69,25 @@ Create a new schema on your SQL server called “normalization_errors” and exe
 
 First of all, it is necessary to obtain an owl version of SNOMED-CT.
 	
-Ontology creation step by step (perl & java are required):
-It is facilitated a script (jar) for creating the owl file.
+Ontology creation step by step:
+It is facilitated a java class on CoreDataset service for creating the owl file.
 
 	1. Get the SNOMED CT release. 
-	a. sct2_Concept_Snapshot_INT_20140131.txt not provided
-	b. sct2_Description_Snapshot-en_INT_20140131.txt not provided
-	c. sct2_Relationship_Snapshot_INT_20140131.txt not provided
-	2. Executed the script (ontologyCreation.jar).
-		Some files have to be on the same folder of the jar:
-		modScriptRF2IncludingNewPropertyProvenanceObtainingFromFileLoincTerminfo.pl
-		terminfoJSON.txt
-		treeTop.txt
-		Arguments of the jar:
-			arg1: sct2_Concept_Snapshot_INT_20140131.txt not provided
-			arg2: sct2_Description_Snapshot-en_INT_20140131.txt not provided
-			arg3: sct2_Relationship_Snapshot_INT_20140131.txt not provided
-			arg4: LOINC.TXT provided
-			arg5: HGNC.TXT provided
+		a. sct2_Concept_Snapshot_INT_20140131.txt not provided
+		b. sct2_Description_Snapshot-en_INT_20140131.txt not provided
+		c. sct2_Relationship_Snapshot_INT_20140131.txt not provided
+	2. Get the LOINC release.
+		a. LOINC.txt not provided
+	3. Get the HGNC release.
+		a. HGNC.txt no provided
+	4. Execute the main method in TermBindingLoader3 class.
+		Arguments of the main:
+			arg1: sct2_Concept_Snapshot_INT_20140131.txt location
+			arg2: sct2_Description_Snapshot-en_INT_20140131.txt location
+			arg3: sct2_Relationship_Snapshot_INT_20140131.txt location
+			arg4: LOINC.txt location
+			arg5: HGNC.txt location
 			arg6: snomed.owl output name of the file and location
-	3. Execute (java –jar ontologyCreation.jar arg1 arg2….)
 
 The resulting file has to be stored and named as follows:
 OWL FILE: /var/lib/tomcat7/files/snomed.owl
@@ -120,14 +119,14 @@ http://localhost:8080/QUeryExecutionService/services/SemanticInteroperabilityLay
 
 NOTE: This service contains a stub to CoreDataset Service on this url: http://localhost:8080/CoreDatasetService/services/CoreDatasetService?wsdl
 
-5. Query Normalization service deployment
+5. Query Builder service deployment
 
-Query Normalization service allows build queries to retrieve data related with SNOMED-CT concepts received as parameters.  
-Copy “QueryNormalizationService.war” file on your tomcat webapps folder and restart tomcat with the correct permissions, tomcat7 user and RW flags.
+Query Builder service allows build queries to retrieve data related with SNOMED-CT concepts received as parameters.  
+Copy “QueryBuilderService.war” file on your tomcat webapps folder and restart tomcat with the correct permissions, tomcat7 user and RW flags.
 Use the wsdl file to generate a service client.
 
 If the process works it generates:
-http:// localhost:8080/QueryNormalizationService/services/QueryNormalizationService?wsdl
+http:// localhost:8080/QueryBuilderService/services/QueryBuilderService?wsdl
 
 NOTE: This service contains a stub to CoreDataset Service on this url: http://localhost:8080/CoreDatasetService/services/CoreDatasetService?wsdl
 

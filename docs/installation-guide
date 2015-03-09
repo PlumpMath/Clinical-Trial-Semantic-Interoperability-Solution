@@ -79,7 +79,7 @@ It is facilitated a java class on CoreDataset service for creating the owl file.
 	2. Get the LOINC release.
 		a. LOINC.txt not provided
 	3. Get the HGNC release.
-		a. HGNC.txt no provided
+		a. HGNC.txt not provided
 	4. Execute the main method in TermBindingLoader3 class.
 		Arguments of the main:
 			arg1: sct2_Concept_Snapshot_INT_20140131.txt location

@@ -1,0 +1,1811 @@
+<channel version="3.2.0">
+  <id>41f5c3d5-36d4-4e57-90e5-87858717cdc7</id>
+  <nextMetaDataId>2</nextMetaDataId>
+  <name>MirthConnectWSNEW</name>
+  <description></description>
+  <enabled>true</enabled>
+  <lastModified>
+    <time>1428661052090</time>
+    <timezone>Europe/Paris</timezone>
+  </lastModified>
+  <revision>66</revision>
+  <sourceConnector version="3.2.0">
+    <metaDataId>0</metaDataId>
+    <name>sourceConnector</name>
+    <properties class="com.mirth.connect.connectors.ws.WebServiceReceiverProperties" version="3.2.0">
+      <pluginProperties/>
+      <listenerConnectorProperties version="3.2.0">
+        <host>0.0.0.0</host>
+        <port>8091</port>
+      </listenerConnectorProperties>
+      <sourceConnectorProperties version="3.2.0">
+        <responseVariable>respond</responseVariable>
+        <respondAfterProcessing>true</respondAfterProcessing>
+        <processBatch>false</processBatch>
+        <firstResponse>false</firstResponse>
+        <resourceIds class="linked-hash-set">
+          <string>Default Resource</string>
+        </resourceIds>
+      </sourceConnectorProperties>
+      <className>com.mirth.connect.connectors.ws.DefaultAcceptMessage</className>
+      <serviceName>MirthConnectWS</serviceName>
+      <usernames/>
+      <passwords/>
+    </properties>
+    <transformer version="3.2.0">
+      <steps/>
+      <inboundTemplate encoding="base64"></inboundTemplate>
+      <outboundTemplate encoding="base64"></outboundTemplate>
+      <inboundDataType>XML</inboundDataType>
+      <outboundDataType>XML</outboundDataType>
+      <inboundProperties class="com.mirth.connect.plugins.datatypes.xml.XMLDataTypeProperties" version="3.2.0">
+        <serializationProperties class="com.mirth.connect.plugins.datatypes.xml.XMLSerializationProperties" version="3.2.0">
+          <stripNamespaces>false</stripNamespaces>
+        </serializationProperties>
+        <batchProperties class="com.mirth.connect.plugins.datatypes.xml.XMLBatchProperties" version="3.2.0">
+          <splitType>Element_Name</splitType>
+          <elementName></elementName>
+          <level>1</level>
+          <query></query>
+          <batchScript></batchScript>
+        </batchProperties>
+      </inboundProperties>
+      <outboundProperties class="com.mirth.connect.plugins.datatypes.xml.XMLDataTypeProperties" version="3.2.0">
+        <serializationProperties class="com.mirth.connect.plugins.datatypes.xml.XMLSerializationProperties" version="3.2.0">
+          <stripNamespaces>false</stripNamespaces>
+        </serializationProperties>
+        <batchProperties class="com.mirth.connect.plugins.datatypes.xml.XMLBatchProperties" version="3.2.0">
+          <splitType>Element_Name</splitType>
+          <elementName></elementName>
+          <level>1</level>
+          <query></query>
+          <batchScript></batchScript>
+        </batchProperties>
+      </outboundProperties>
+    </transformer>
+    <filter version="3.2.0">
+      <rules/>
+    </filter>
+    <transportName>Web Service Listener</transportName>
+    <mode>SOURCE</mode>
+    <enabled>true</enabled>
+    <waitForPrevious>true</waitForPrevious>
+  </sourceConnector>
+  <destinationConnectors>
+    <connector version="3.2.0">
+      <metaDataId>1</metaDataId>
+      <name>DATABASE</name>
+      <properties class="com.mirth.connect.connectors.jdbc.DatabaseDispatcherProperties" version="3.2.0">
+        <pluginProperties/>
+        <destinationConnectorProperties version="3.2.0">
+          <queueEnabled>false</queueEnabled>
+          <sendFirst>false</sendFirst>
+          <retryIntervalMillis>10000</retryIntervalMillis>
+          <regenerateTemplate>false</regenerateTemplate>
+          <retryCount>0</retryCount>
+          <rotate>false</rotate>
+          <includeFilterTransformer>false</includeFilterTransformer>
+          <threadCount>1</threadCount>
+          <validateResponse>false</validateResponse>
+          <resourceIds class="linked-hash-set">
+            <string>Default Resource</string>
+          </resourceIds>
+        </destinationConnectorProperties>
+        <driver>com.mysql.jdbc.Driver</driver>
+        <url>jdbc:mysql://kandel.dia.fi.upm.es:3306/hl7rim_mysql2</url>
+        <username>service</username>
+        <password>!p3p1n0!</password>
+        <query>
+//*****DONT MODIFY THESE LINES*****//
+
+var dbConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/&apos;+$(&apos;database&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
+logger.info(&quot;**** PROCESSING A MESSAGE ****&quot;);
+
+//*************************************************************************************//
+
+//Connection to temporal database
+var tmpConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/&apos;+$(&apos;tmp_name&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
+
+/*IMPORTANT NOTE: The next symbol is used to identify where a query for temporal database is done
+/*$$*/
+var observationCount=0;
+var procCount=0;
+var sbadmCount=0;
+var entityCountA=0;
+var entityCountB=0;
+var patID=$(&apos;PSN_Id&apos;);
+var interpretationCount=0;
+var targetCount=0;
+var valuesCount=0;
+var methodCount=0;
+
+// Functions
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+};
+
+function guid() {
+  return s4() + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + s4() + s4();
+}
+
+function replaceText( queryText, text, newText ) {
+	while (queryText.indexOf(text) != -1) {
+		queryText = queryText.replace(text,newText);
+	}
+	return queryText;
+}
+
+function isEmpty(str) {
+	if(typeof(str)==&apos;undefined&apos;) {
+		return true;
+	}
+    return (!str || 0 == str.length);
+}
+
+function print(text) {
+	logger.error(&quot; &lt;&lt;&lt;&lt;&lt; &quot; + text + &quot; &gt;&gt;&gt;&gt;&gt; &quot;);
+}
+
+/////END Functions////
+
+//Import vars
+var entries = $(&apos;entries&apos;);
+var actRelationship = $(&apos;actRelationship&apos;);
+var observationValues = $(&apos;observationValues&apos;);
+var entities = $(&apos;entities&apos;);
+var participations = $(&apos;participations&apos;);
+var roles = $(&apos;roles&apos;);
+var interpretationCodes = $(&apos;interpretationCodes&apos;);
+var documentID = $(&apos;documentID&apos;);
+var documentTitle = $(&apos;documentTitle&apos;);
+var documentDate = $(&apos;documentDate&apos;);
+var sectionActs = $(&apos;sectionActs&apos;);
+
+//Create current date var
+var date=new Date();
+var year=date.getFullYear();
+var month=date.getMonth()+1;
+var day=date.getDate();
+if(month&lt;10) month=&quot;0&quot;+month;
+if(day&lt;10) day=&quot;0&quot;+day;
+var hour = date.getHours();
+var minutes = date.getMinutes();
+var seconds = date.getSeconds();
+date=year+&apos;-&apos;+month+&apos;-&apos;+day+&apos; &apos;+hour+&apos;:&apos;+minutes+&apos;:&apos;+seconds;
+/////END DATE////
+
+//Check if the message id exist
+var queryRes= dbConn.executeCachedQuery(&quot;SELECT COUNT(*) FROM act WHERE act.id=&apos;&quot;+documentID+&quot;&apos;&quot;);
+queryRes.next();
+var filenameIntroduced=queryRes.getInt(1);
+queryRes.close();
+/////END CHECK MESSAGE ID/////
+
+
+//Check if the patient exist
+var q = &quot;SELECT COUNT(*) FROM person WHERE id=&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;&quot;;
+var res= dbConn.executeCachedQuery(q);
+res.next();
+var patientExists = res.getInt(1);
+res.close();
+/////END CHECK PATINEN EXIST/////
+
+if (patientExists&lt;1) {//The patient does not exist
+	// ENTITY
+	var query= &quot;INSERT INTO entity (id,code,classCode,determinerCode,creationTime,codeVocId) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;,&apos;337915000&apos;,&apos;PSN&apos;,&apos;INSTANCE&apos;,&apos;&quot;+date+&quot;&apos;, &apos;2.16.840.1.113883.6.96&apos;)&quot;;
+	query=replaceText(query,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+	dbConn.executeUpdate(query);
+
+	// LIVINGSUBJECT
+	var gender=$(&apos;PSN_Gender&apos;);
+	var genderCode = &quot;&quot;;
+	if (gender==&quot;F&quot;) {
+		genderCode = &quot;248152002&quot;
+	}
+	else if (gender==&quot;M&quot;) {
+		genderCode = &quot;248153007&quot;
+	}
+	else {//gender unknown
+		genderCode = &quot;394743007&quot;;
+	}
+	var tolerance = $(&apos;PSN_BirthDateTolerance&apos;);//Math.floor($(&apos;PSN_BirthDateTolerance&apos;));
+	query = &quot;INSERT INTO livingsubject (id, administrativeGenderCode, birthTime, birthTimeTolerance) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+genderCode+&quot;&apos;, &apos;&quot;+$(&apos;PSN_BirthDate&apos;)+&quot;&apos;, &apos;&quot; + tolerance + &quot;&apos;)&quot;;
+	query=replaceText(query,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+	dbConn.executeUpdate(query);
+
+	//PERSON
+	query = &quot;INSERT INTO person (id, name, surname) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Name&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Surname&apos;)+&quot;&apos;)&quot;;
+	dbConn.executeUpdate(query);
+
+	// ROLE
+	query=&quot;INSERT INTO role (entityId, id, classCode) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;PAT&apos;)&quot;;
+	dbConn.executeUpdate(query);
+}
+
+//TABLES ENTITY, LIVINGSUBJECT, PERSON AND ROLE FOR TEMPORAL DATABASE --&gt; INFO ABOUT THE PATIENT
+/*$$*/
+var query= &quot;INSERT INTO entity (id,code,classCode,determinerCode,creationTime,codeVocId) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;,&apos;337915000&apos;,&apos;PSN&apos;,&apos;INSTANCE&apos;,&apos;&quot;+date+&quot;&apos;, &apos;2.16.840.1.113883.6.96&apos;)&quot;;
+tmpConn.executeUpdate(query);
+
+query = &quot;INSERT INTO livingsubject SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.livingsubject WHERE livingsubject.id=&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;&quot;;
+tmpConn.executeUpdate(query);
+
+query = &quot;INSERT INTO person (id, name, surname) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Name&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Surname&apos;)+&quot;&apos;)&quot;;
+tmpConn.executeUpdate(query);
+
+query=&quot;INSERT INTO role (entityId, id, classCode) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;PAT&apos;)&quot;;
+tmpConn.executeUpdate(query);
+////////////////////////////////////////////////////////////////////
+
+//SECTION ACTS
+for (var a in sectionActs) {
+	var sectionQ = &quot;&quot;;
+	if (!isEmpty(sectionActs[a][&apos;effectiveTime&apos;])) {
+		sectionQ = &quot;INSERT INTO act (id,code,classCode,moodCode,codeVocId,title,text,effectiveTime_start,creationTime) VALUES (&apos;&quot; + sectionActs[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + sectionActs[a][&apos;code&apos;] + &quot;&apos;, &apos;OBS&apos;, &apos;EVN&apos;, &apos;&quot; 
+		+ sectionActs[a][&apos;codeVocId&apos;] + &quot;&apos;, &apos;&quot; + sectionActs[a][&apos;title&apos;] + &quot;&apos;, &apos;&quot; + sectionActs[a][&apos;text&apos;] + &quot;&apos;, &apos;&quot; + sectionActs[a][&apos;effectiveTime&apos;] + &quot;&apos;, &apos;&quot; + date + &quot;&apos;)&quot;;
+	}
+	else {
+		sectionQ = &quot;INSERT INTO act (id,code,classCode,moodCode,codeVocId,title,text,creationTime) VALUES (&apos;&quot; + sectionActs[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + sectionActs[a][&apos;code&apos;] + &quot;&apos;, &apos;OBS&apos;, &apos;EVN&apos;, &apos;&quot; 
+		+ sectionActs[a][&apos;codeVocId&apos;] + &quot;&apos;, &apos;&quot; + sectionActs[a][&apos;title&apos;] + &quot;&apos;, &apos;&quot; + sectionActs[a][&apos;text&apos;] + &quot;&apos;, &apos;&quot; + date + &quot;&apos;)&quot;;
+	}
+	sectionQ=replaceText(sectionQ,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+	sectionQ=replaceText(sectionQ,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+	dbConn.executeUpdate(sectionQ);
+	/*$$*/ 
+	tmpConn.executeUpdate(sectionQ);
+	//Insert a relation between every act and the file
+	dbConn.executeUpdate(&quot;INSERT INTO actrelationship (idA, idB, typeCode) VALUES (&apos;&quot;+sectionActs[a][&apos;id&apos;]+&quot;&apos;, &apos;&quot;+documentID+&quot;&apos;, &apos;belongTo&apos;)&quot;);
+	/*$$*/
+	tmpConn.executeUpdate(&quot;INSERT INTO actrelationship (idA, idB, typeCode) VALUES (&apos;&quot;+sectionActs[a][&apos;id&apos;]+&quot;&apos;, &apos;&quot;+documentID+&quot;&apos;, &apos;belongTo&apos;)&quot;);
+	//Insert a relation between every act and the patient (participant)
+	dbConn.executeUpdate(&quot;INSERT INTO participation (entityId, roleId, typeCode, actId) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;PART&apos;, &apos;&quot; + sectionActs[a][&apos;id&apos;] + &quot;&apos;)&quot;);
+	/*$$*/
+	tmpConn.executeUpdate(&quot;INSERT INTO participation (entityId, roleId, typeCode, actId) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;PART&apos;, &apos;&quot; + sectionActs[a][&apos;id&apos;] + &quot;&apos;)&quot;);
+}
+
+
+// FILENAME ACT
+// If the file already exists in the database delete previous acts from database and introduce new ones
+if (filenameIntroduced&gt;0){
+	var delConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/&apos;+$(&apos;database&apos;) +&apos;_deleted&apos;,$(&apos;user&apos;),$(&apos;password&apos;));
+	queryRes= dbConn.executeCachedQuery(&quot;SELECT actrelationship.idA FROM actrelationship WHERE actrelationship.idB=&apos;&quot;+documentID+&quot;&apos;&quot; );
+
+	//Copy msg to deleted database
+	delConn.executeUpdate(&quot;INSERT INTO act SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.act WHERE act.id=&apos;&quot;+documentID+&quot;&apos;&quot;);
+	dbConn.executeUpdate(&quot;DELETE FROM participation WHERE (participation.entityId=&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos; AND participation.actId=&apos;&quot;+documentID+&quot;&apos;)&quot;);
+	while(queryRes&amp;&amp;queryRes.next()){
+		var idA=queryRes.getString(1);
+		delConn.executeUpdate(&quot;INSERT INTO actobservationvalues SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.actobservationvalues WHERE (actobservationvalues.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM actobservationvalues WHERE (actobservationvalues.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+		delConn.executeUpdate(&quot;INSERT INTO actrelationship (idA, idB, typeCode) SELECT actrelationship.idA, actrelationship.idB, actrelationship.typeCode FROM &quot;+$(&apos;database&apos;)+&quot;.actrelationship WHERE idA=&apos;&quot;+idA+&quot;&apos;&quot;);
+		delConn.executeUpdate(&quot;UPDATE actrelationship SET modificationTime = (SELECT act.modificationTime FROM &quot;+$(&apos;database&apos;)+&quot;.act WHERE id = &apos;&quot;+documentID+&quot;&apos;) WHERE idA = &apos;&quot;+idA+&quot;&apos;&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM actrelationship WHERE (actrelationship.idA=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		
+		delConn.executeUpdate(&quot;INSERT INTO acttargetsitecode SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.acttargetsitecode WHERE (acttargetsitecode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM acttargetsitecode WHERE (acttargetsitecode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+		delConn.executeUpdate(&quot;INSERT INTO actobservationinterpretationcode SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.actobservationinterpretationcode WHERE (actobservationinterpretationcode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM actobservationinterpretationcode WHERE (actobservationinterpretationcode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+		delConn.executeUpdate(&quot;INSERT INTO actmethodcode SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.actmethodcode WHERE (actmethodcode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM actmethodcode WHERE (actmethodcode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+		dbConn.executeUpdate(&quot;DELETE FROM participation WHERE (participation.entityId=&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos; AND participation.actId=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+		delConn.executeUpdate(&quot;INSERT INTO observation SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.observation WHERE (observation.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM observation WHERE (observation.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+		delConn.executeUpdate(&quot;INSERT INTO procedures SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.procedures WHERE (procedures.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM procedures WHERE (procedures.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+		delConn.executeUpdate(&quot;INSERT INTO substanceadministration SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.substanceadministration WHERE (substanceadministration.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM substanceadministration WHERE (substanceadministration.id=&apos;&quot;+idA+&quot;&apos;)&quot;);		
+
+		delConn.executeUpdate(&quot;INSERT INTO act SELECT id, classCode, subClassCode, moodCode, code, codeVocId, codeOrig, codeOrigVocId, actionNegationInd, title, text, statusCode, effectiveTime_start, effectiveTime_end, activityTime, availabilityTime, creationTime, &apos;0000-00-00&apos;, uncertaintyCode FROM &quot;+$(&apos;database&apos;)+&quot;.act WHERE act.id=&apos;&quot;+idA+&quot;&apos;&quot;);
+		dbConn.executeUpdate(&quot;DELETE FROM act WHERE (act.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+	}
+	//Update msg modification time
+	dbConn.executeUpdate(&quot;UPDATE act SET modificationTime = &apos;&quot; + date + &quot;&apos; WHERE id = &apos;&quot; + documentID + &quot;&apos;&quot;);
+	delConn.close();
+	//DELETE ACTS FORM NORMALIZED DATABASE
+	queryRes = dbConn.executeCachedQuery(&quot;SHOW DATABASES WHERE `database`=&apos;normalized_&quot;+$(&apos;database&apos;)+&quot;&apos;&quot;);
+	var dbExists = queryRes.next();
+	if (dbExists) {//THE NORMALIZED DATABASE EXISTS
+		var normalizedConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/normalized_&apos;+$(&apos;database&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
+		var normalizedDelConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/normalized_&apos;+$(&apos;database&apos;)+&apos;_deleted&apos;,$(&apos;user&apos;),$(&apos;password&apos;));	
+		queryRes = normalizedConn.executeCachedQuery(&quot;SELECT actrelationship.idA FROM actrelationship WHERE actrelationship.idB=&apos;&quot;+documentID+&quot;&apos;&quot; );
+		normalizedDelConn.executeUpdate(&quot;INSERT INTO act SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.act WHERE act.id=&apos;&quot;+documentID+&quot;&apos;&quot;);
+		
+		normalizedConn.executeUpdate(&quot;DELETE FROM participation WHERE (participation.entityId=&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos; AND participation.actId=&apos;&quot;+documentID+&quot;&apos;)&quot;);
+		while(queryRes&amp;&amp;queryRes.next()){
+		var idA=queryRes.getString(1);
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO actobservationvalues SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.actobservationvalues WHERE (actobservationvalues.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM actobservationvalues WHERE (actobservationvalues.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO actrelationship (idA, idB, typeCode) SELECT actrelationship.idA, actrelationship.idB, actrelationship.typeCode FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.actrelationship WHERE idA=&apos;&quot;+idA+&quot;&apos;&quot;);
+			normalizedDelConn.executeUpdate(&quot;UPDATE actrelationship SET modificationTime = (SELECT act.modificationTime FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.act WHERE id = &apos;&quot;+documentID+&quot;&apos;) WHERE idA = &apos;&quot;+idA+&quot;&apos;&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM actrelationship WHERE (actrelationship.idA=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO acttargetsitecode SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.acttargetsitecode WHERE (acttargetsitecode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM acttargetsitecode WHERE (acttargetsitecode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO actobservationinterpretationcode SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.actobservationinterpretationcode WHERE (actobservationinterpretationcode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM actobservationinterpretationcode WHERE (actobservationinterpretationcode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO actmethodcode SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.actmethodcode WHERE (actmethodcode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM actmethodcode WHERE (actmethodcode.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+			
+			normalizedConn.executeUpdate(&quot;DELETE FROM participation WHERE (participation.entityId=&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos; AND participation.actId=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO observation SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.observation WHERE (observation.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM observation WHERE (observation.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO procedures SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.procedures WHERE (procedures.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM procedures WHERE (procedures.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO substanceadministration SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.substanceadministration WHERE (substanceadministration.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM substanceadministration WHERE (substanceadministration.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+
+			normalizedDelConn.executeUpdate(&quot;INSERT INTO act SELECT id, classCode, subClassCode, moodCode, code, codeVocId, codeOrig, codeOrigVocId, actionNegationInd, title, text, statusCode, effectiveTime_start, effectiveTime_end, activityTime, availabilityTime, creationTime, &apos;0000-00-00&apos;, uncertaintyCode FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.act WHERE act.id=&apos;&quot;+idA+&quot;&apos;&quot;);
+			normalizedConn.executeUpdate(&quot;DELETE FROM act WHERE (act.id=&apos;&quot;+idA+&quot;&apos;)&quot;);
+		}
+		normalizedConn.executeUpdate(&quot;UPDATE act SET modificationTime = &apos;&quot; + date + &quot;&apos; WHERE id = &apos;&quot; + documentID + &quot;&apos;&quot;);
+		normalizedConn.close();
+		normalizedDelConn.close();
+	}
+} else {
+	var fileQuery = &quot;INSERT INTO act (id, classCode, moodCode, title, creationTime, modificationTime, effectivetime_start) VALUES (&apos;&quot;+documentID+&quot;&apos;, &apos;FILE&apos;, &apos;EVN&apos;, &apos;&quot; + documentTitle + &quot;&apos;, &apos;&quot; + date + &quot;&apos;, &apos;&quot; + date + &quot;&apos;, &apos;&quot; + documentDate + &quot;&apos;)&quot;;
+	fileQuery=replaceText(fileQuery,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;); 
+	fileQuery=replaceText(fileQuery,&apos;\&apos;\&apos;&apos;,&apos;null&apos;); 
+	dbConn.executeUpdate(fileQuery);
+	tmpConn.executeUpdate(fileQuery);
+}
+/*$$*/
+dbConn.executeUpdate(&quot;INSERT INTO participation (entityId, roleId, actId, typeCode) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+documentID+&quot;&apos;, &apos;PART&apos;)&quot;);
+/*$$*/
+tmpConn.executeUpdate(&quot;INSERT INTO participation (entityId, roleId, actId, typeCode) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+documentID+&quot;&apos;, &apos;PART&apos;)&quot;);
+////END Filename ACT////
+
+//Entries
+for (var i in entries) {
+	// ACTS
+	query = &quot;INSERT INTO act (id, classCode, moodCode, code, codeVocId, codeOrigVocId, actionNegationInd, title,&quot;
+ 				+&quot;text, statusCode, effectiveTime_start, effectiveTime_end, activityTime, availabilityTime, creationTime, modificationTime,codeOrig)&quot;
+				+&quot; VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;classCode&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;moodCode&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;code&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;codeVocId&apos;]
+				+ &quot;&apos; ,&apos;&quot;+entries[i][&apos;codeOrigVocId&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;actionNegationInd&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;title&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;text&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;statusCode&apos;]+&quot;&apos;,&apos;&quot;
+				+entries[i][&apos;effectiveTime&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;effectiveTime_end&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;activityTime&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;availabilityTime&apos;]+&quot;&apos;,&apos;&quot;+date+&quot;&apos;,&apos;&quot;+entries[i][&apos;modificationTime&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;codeOrig&apos;]+&quot;&apos;)&quot;;
+	query=replaceText(query,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;); 	
+	query=replaceText(query,&apos;\&apos;\&apos;&apos;,&apos;null&apos;); 
+	var result = dbConn.executeUpdate(query);
+	/*$$*/
+	tmpConn.executeUpdate(query);
+
+	// OBSERVATIONS, PROCEDURES, SUBSTANCE ADMINISTRATIONS
+	if(entries[i][&apos;classCode&apos;]==&quot;OBS&quot;){
+		observationCount++;
+		dbConn.executeUpdate(&quot;INSERT INTO observation (id) VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;)&quot;);
+		/*$$*/
+		tmpConn.executeUpdate(&quot;INSERT INTO observation (id) VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;)&quot;);
+	}
+	else if(entries[i][&apos;classCode&apos;]==&quot;PROC&quot;){
+		procCount++;
+		dbConn.executeUpdate(&quot;INSERT INTO procedures (id) VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;)&quot;);
+		/*$$*/
+		tmpConn.executeUpdate(&quot;INSERT INTO procedures (id) VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;)&quot;);
+	}
+	else if(entries[i][&apos;classCode&apos;]==&quot;SBADM&quot;){
+		sbadmCount++;
+		var SBADMQ = &quot;INSERT INTO substanceadministration (id,doseQuantity,rateQuantity,routeCode,periodIntervalTime,periodIntervalUnits,routeCodeVocId,routeCodeTitle,doseQuantityUnits,rateQuantityUnits) VALUES &quot; 
+				+ &quot;(&apos;&quot;+entries[i][&apos;id&apos;]+ &quot;&apos;, &apos;&quot; + entries[i][&apos;doseQuantity&apos;]
+				+ &quot;&apos;, &apos;&quot; + entries[i][&apos;rateQuantity&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;routeCode&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;administratioPeriodValue&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;administratioPeriodUnit&apos;]
+				 + &quot;&apos;, &apos;&quot; + entries[i][&apos;routeCodeVocId&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;routeCodeTitle&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;doseQuantityUnit&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;rateQuantityUnit&apos;] + &quot;&apos;)&quot;;
+		SBADMQ=replaceText(SBADMQ,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+		SBADMQ=replaceText(SBADMQ,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);		
+		dbConn.executeUpdate(SBADMQ);
+		/*$$*/
+		tmpConn.executeUpdate(SBADMQ);
+	}
+
+	query=&quot;INSERT INTO participation (entityId, roleId, actId, typeCode) VALUES (&apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+$(&apos;PSN_Id&apos;)+&quot;&apos;, &apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;, &apos;PART&apos;)&quot;;
+	dbConn.executeUpdate(query);
+	/*$$*/
+	tmpConn.executeUpdate(query);
+
+	//TARGET SITES
+	for(var c in entries[i][&apos;targetSites&apos;]) {
+		targetCount++;
+		query = &quot;INSERT INTO acttargetsitecode (id, code, title, codeVocId) VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;targetSites&apos;][c][&apos;code&apos;]+&quot;&apos;,&apos;&quot;
+				+entries[i][&apos;targetSites&apos;][c][&apos;title&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;targetSites&apos;][c][&apos;codeVocId&apos;]+&quot;&apos;)&quot;;
+		query=replaceText(query,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+		query=replaceText(query,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+		result = dbConn.executeUpdate(query);
+		/*$$*/
+		tmpConn.executeUpdate(query);
+	}
+
+	//METHODS
+	for(var c in entries[i][&apos;methods&apos;]) {
+		methodCount++;
+		query = &quot;INSERT INTO actmethodcode (id, code, title, codeVocId, codeOrig, codeOrigVocId) VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;methods&apos;][c][&apos;code&apos;]+&quot;&apos;,&apos;&quot;
+				+entries[i][&apos;methods&apos;][c][&apos;title&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;methods&apos;][c][&apos;codeVocId&apos;]+&quot;&apos;,&apos;&quot;+entries[i][&apos;methods&apos;][c][&apos;codeOrig&apos;]+&quot;&apos;,&apos;&quot;
+				+entries[i][&apos;methods&apos;][c][&apos;codeOrigVocId&apos;]+&quot;&apos;)&quot;;
+		query=replaceText(query,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+		query=replaceText(query,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+		result = dbConn.executeUpdate(query);
+		/*$$*/
+		tmpConn.executeUpdate(query);
+	}
+
+	//ACT RELATIONSHIP
+	result = dbConn.executeUpdate(&quot;INSERT INTO actrelationship (idA, idB, typeCode) VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;, &apos;&quot;+documentID+&quot;&apos;, &apos;belongTo&apos;)&quot;);
+	/*$$*/
+	tmpConn.executeUpdate(&quot;INSERT INTO actrelationship (idA, idB, typeCode) VALUES (&apos;&quot;+entries[i][&apos;id&apos;]+&quot;&apos;, &apos;&quot;+documentID+&quot;&apos;, &apos;belongTo&apos;)&quot;);
+
+	//Realtions with section act
+	if(!isEmpty(entries[i][&apos;secId&apos;])){
+		dbConn.executeUpdate(&quot;INSERT INTO actrelationship (idA,idB,typeCode) VALUES (&apos;&quot; + entries[i][&apos;secId&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;id&apos;] + &quot;&apos;, &apos;COMP&apos;)&quot;);
+		/*$$*/
+		tmpConn.executeUpdate(&quot;INSERT INTO actrelationship (idA,idB,typeCode) VALUES (&apos;&quot; + entries[i][&apos;secId&apos;] + &quot;&apos;, &apos;&quot; + entries[i][&apos;id&apos;] + &quot;&apos;, &apos;COMP&apos;)&quot;);
+	}
+}
+/////END Entries////
+
+//ActRelationships
+for (var a in actRelationship) {
+	query = &quot;INSERT INTO actrelationship (idA, idB, typeCode) VALUES (&apos;&quot; + actRelationship[a][&apos;idA&apos;] + &quot;&apos;, &apos;&quot; + actRelationship[a][&apos;idB&apos;] + &quot;&apos;, &apos;&quot; + actRelationship[a][&apos;typeCode&apos;] +&quot;&apos;)&quot;;
+	dbConn.executeUpdate(query);
+	/*$$*/
+	tmpConn.executeUpdate(query);
+}
+///END ActRelationship///
+
+
+//Observation values
+for (var a in observationValues) {
+	valuesCount++;
+	var queryOV = &quot;&quot;;
+	if (observationValues[a][&apos;type&apos;]==&apos;UNDEF&apos;) {
+		if (observationValues[a][&apos;value&apos;]==&quot;&quot;) {
+			queryOV = &quot;INSERT INTO actobservationvalues (id, code, codeVocId, title, units, referenceRangeMin, referenceRangeMax) VALUES (&apos;&quot; + observationValues[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;code&apos;]  
+ 			+ &quot;&apos;, &apos;&quot; + observationValues[a][&apos;codeVocId&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;title&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;unit&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;referenceRangeMin&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;referenceRangeMax&apos;] + &quot;&apos;)&quot;;
+		}
+		else {
+			queryOV = &quot;INSERT INTO actobservationvalues (id, code, codeVocId, title, value, units, referenceRangeMin, referenceRangeMax) VALUES (&apos;&quot; + observationValues[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;code&apos;]  
+ 			+ &quot;&apos;, &apos;&quot; + observationValues[a][&apos;codeVocId&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;title&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;value&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;unit&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;referenceRangeMin&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;referenceRangeMax&apos;] + &quot;&apos;)&quot;;
+		}
+	}
+	else {
+		if (observationValues[a][&apos;value&apos;]==&quot;&quot;) {
+			queryOV = &quot;INSERT INTO actobservationvalues (id, code, codeVocId, title, valueType, units, referenceRangeMin, referenceRangeMax) VALUES (&apos;&quot; + observationValues[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;code&apos;]  
+ 			+ &quot;&apos;, &apos;&quot; + observationValues[a][&apos;codeVocId&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;title&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;type&apos;] 
+			+ &quot;&apos;, &apos;&quot; + observationValues[a][&apos;unit&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;referenceRangeMin&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;referenceRangeMax&apos;] + &quot;&apos;)&quot;;
+		}
+		else {
+			queryOV = &quot;INSERT INTO actobservationvalues (id, code, codeVocId, title, value, valueType, units, referenceRangeMin, referenceRangeMax) VALUES (&apos;&quot; + observationValues[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;code&apos;]  
+ 			+ &quot;&apos;, &apos;&quot; + observationValues[a][&apos;codeVocId&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;title&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;value&apos;] + &quot;&apos;, &apos;&quot; + observationValues[a][&apos;type&apos;] 
+			+ &quot;&apos;, &apos;&quot; + observationValues[a][&apos;unit&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;referenceRangeMin&apos;] + &quot;&apos;, &apos;&quot;  + observationValues[a][&apos;referenceRangeMax&apos;] + &quot;&apos;)&quot;;
+		}
+	}
+	queryOV=replaceText(queryOV,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+	queryOV=replaceText(queryOV,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+	dbConn.executeUpdate(queryOV);
+	/*$$*/
+	tmpConn.executeUpdate(queryOV);
+}
+///END Observation values///
+
+
+//Participant (participation, entity, role)
+for (var a in participations) {
+	if (isEmpty(entities[a][&apos;code&apos;]) &amp;&amp; isEmpty(entities[a][&apos;desc&apos;]) &amp;&amp; entities[a][&apos;classCode&apos;]==&quot;MMAT&quot;) {//SBADM without substance
+		var total = -1;
+	}
+	else {
+		if (isEmpty(entities[a][&apos;code&apos;]) &amp;&amp; !isEmpty(entities[a][&apos;desc&apos;])) {
+			query = &quot;SELECT COUNT(id) FROM entity WHERE code IS NULL AND `desc`=&apos;&quot; + entities[a][&apos;desc&apos;] + &quot;&apos;&quot;;
+			var comp = false;
+		}
+		else if (isEmpty(entities[a][&apos;code&apos;]) &amp;&amp; !isEmpty(entities[a][&apos;name&apos;])) {
+			query = &quot;SELECT COUNT(id) FROM entity WHERE code IS NULL AND name=&apos;&quot; + entities[a][&apos;name&apos;] + &quot;&apos;&quot;;
+			var comp = false;
+		}
+		else {
+			query = &quot;SELECT COUNT(code) FROM entity WHERE code = &apos;&quot; + entities[a][&apos;code&apos;] + &quot;&apos;&quot;;
+			var comp = true;
+		}
+		queryRes = dbConn.executeCachedQuery(query);
+		queryRes.next();
+		var subTotal = queryRes.getInt(1);
+		if (subTotal&gt;0 &amp;&amp; comp) {
+			if (!isEmpty(entities[a][&apos;desc&apos;])) {
+				query = &quot;SELECT COUNT(code) FROM entity WHERE code = &apos;&quot; + entities[a][&apos;code&apos;] + &quot;&apos; AND `desc` = &apos;&quot; + entities[a][&apos;desc&apos;] + &quot;&apos;&quot;;
+				queryRes = dbConn.executeCachedQuery(query);
+				queryRes.next();
+				var total = queryRes.getInt(1);
+			}
+			else {
+				var total = 1;
+			}
+		}
+		else if (subTotal==0) {
+			var total = 0
+		}
+		else if (subTotal&gt;0 &amp;&amp; !comp){
+			var total = 1;
+		}
+	}
+	if (total&gt;0) {//THE ENTITY EXISTS
+		entityCountA++;
+		if (!isEmpty(entities[a][&apos;code&apos;])) {
+			query = &quot;SELECT id,code FROM entity WHERE code = &apos;&quot; + entities[a][&apos;code&apos;] + &quot;&apos; LIMIT 1&quot;;
+			queryRes = dbConn.executeCachedQuery(query);
+			queryRes.next();
+			var entityId = queryRes.getString(&quot;id&quot;);
+		}
+		else {
+			if (!isEmpty(entities[a][&apos;desc&apos;])) {
+				query = &quot;SELECT id FROM entity WHERE code IS NULL AND `desc`=&apos;&quot; + entities[a][&apos;desc&apos;] + &quot;&apos; LIMIT 1&quot;;
+			}
+			else if (!isEmpty(entities[a][&apos;name&apos;])) {
+				query = &quot;SELECT id FROM entity WHERE code IS NULL AND name=&apos;&quot; + entities[a][&apos;name&apos;] + &quot;&apos; LIMIT 1&quot;;
+			}
+			queryRes = dbConn.executeCachedQuery(query);
+			queryRes.next();
+			var entityId = queryRes.getString(&quot;id&quot;);
+		}
+		/*$$*/
+
+	  	//The entity is stored into the temporal database if does not exist previously
+        	query = &quot;INSERT IGNORE INTO entity SELECT * FROM &quot;+$(&apos;database&apos;)+&quot;.entity WHERE entity.id=&apos;&quot;+entityId+&quot;&apos;&quot;;
+		tmpConn.executeUpdate(query);
+		
+		query = &quot;INSERT INTO participation (typeCode,actId,entityId,roleId) VALUES (&apos;&quot; + participations[a][&apos;typeCode&apos;] + &quot;&apos;, &apos;&quot; + participations[a][&apos;actId&apos;] + &quot;&apos;, &apos;&quot; 
+		+ entityId + &quot;&apos;, &apos;&quot; + participations[a][&apos;roleId&apos;] + &quot;&apos;)&quot;;
+		query=replaceText(query,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+		query=replaceText(query,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+		dbConn.executeUpdate(query);
+
+		/*$$*/
+		tmpConn.executeUpdate(query);
+
+		query = &quot;INSERT INTO role (classCode,entityId,id,title,code) VALUES (&apos;&quot; + roles[a][&apos;classCode&apos;] + &quot;&apos;, &apos;&quot; + entityId + &quot;&apos;, &apos;&quot;
+		+ roles[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + roles[a][&apos;name&apos;] + &quot;&apos;, &apos;&quot; + roles[a][&apos;code&apos;] + &quot;&apos;)&quot;;
+		query=replaceText(query,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+		query=replaceText(query,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+		dbConn.executeUpdate(query);
+
+		/*$$*/
+		tmpConn.executeUpdate(query);
+	}
+	else if (total==0){//THE ENTITY DOES NOT EXISTS
+		entityCountB++;
+		var queryP = &quot;INSERT INTO participation (typeCode,actId,entityId,roleId) VALUES (&apos;&quot; + participations[a][&apos;typeCode&apos;] + &quot;&apos;, &apos;&quot; + participations[a][&apos;actId&apos;] + &quot;&apos;, &apos;&quot; 
+		+ participations[a][&apos;entityId&apos;] + &quot;&apos;, &apos;&quot; + participations[a][&apos;roleId&apos;] + &quot;&apos;)&quot;;
+		var queryE = &quot;INSERT INTO entity (id,classCode,code,codeVocId,title,name,determinerCode,`desc`,creationTime) VALUES (&apos;&quot; + entities[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + entities[a][&apos;classCode&apos;] + &quot;&apos;, &apos;&quot;
+			+ entities[a][&apos;code&apos;] + &quot;&apos;, &apos;&quot; + entities[a][&apos;codeVocId&apos;] + &quot;&apos;, &apos;&quot; + entities[a][&apos;title&apos;] + &quot;&apos;, &apos;&quot; + entities[a][&apos;name&apos;] + &quot;&apos;, &apos;&quot; + entities[a][&apos;determinerCode&apos;] + &quot;&apos;, &apos;&quot; + entities[a][&apos;desc&apos;] + &quot;&apos;, &apos;&quot; + date + &quot;&apos;)&quot;;
+		var queryR = &quot;INSERT INTO role (classCode,entityId,id,title,code) VALUES (&apos;&quot; + roles[a][&apos;classCode&apos;] + &quot;&apos;, &apos;&quot; + roles[a][&apos;entityId&apos;] + &quot;&apos;, &apos;&quot;
+		+ roles[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + roles[a][&apos;name&apos;] + &quot;&apos;, &apos;&quot; + roles[a][&apos;code&apos;] + &quot;&apos;)&quot;;
+
+		queryP=replaceText(queryP,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+		queryP=replaceText(queryP,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+		queryE=replaceText(queryE,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+		queryE=replaceText(queryE,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+		queryR=replaceText(queryR,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+		queryR=replaceText(queryR,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+
+		dbConn.executeUpdate(queryP);
+		dbConn.executeUpdate(queryE);
+		dbConn.executeUpdate(queryR);
+
+		/*$$*/
+		tmpConn.executeUpdate(queryP);
+		tmpConn.executeUpdate(queryE);
+		tmpConn.executeUpdate(queryR);
+	}
+}
+
+///END Participant
+
+//InterpretationCodes
+for (var a in interpretationCodes) {
+	interpretationCount++;
+	query = &quot;INSERT INTO actobservationinterpretationcode (id, code, codeVocId, title) VALUES (&apos;&quot; + interpretationCodes[a][&apos;id&apos;] + &quot;&apos;, &apos;&quot; + interpretationCodes[a][&apos;code&apos;] + 
+	&quot;&apos;, &apos;&quot; + interpretationCodes[a][&apos;codeVocId&apos;] + &quot;&apos;, &apos;&quot; + interpretationCodes[a][&apos;title&apos;] + &quot;&apos;)&quot;;
+	query=replaceText(query,&apos;\&apos;undefined\&apos;&apos;,&apos;null&apos;);
+	query=replaceText(query,&apos;\&apos;\&apos;&apos;,&apos;null&apos;);
+	dbConn.executeUpdate(query);
+
+	/*$$*/
+	tmpConn.executeUpdate(query);
+}
+
+globalChannelMap.put(&apos;N_OBS&apos;,observationCount);//TOKANDEL
+globalChannelMap.put(&apos;N_PROC&apos;,procCount);//TOKANDEL
+globalChannelMap.put(&apos;N_SBADM&apos;,sbadmCount);//TOKANDEL
+globalChannelMap.put(&apos;N_ENT_A&apos;,entityCountA);//TOKANDEL
+globalChannelMap.put(&apos;N_ENT_B&apos;,entityCountB);//TOKANDEL
+globalChannelMap.put(&apos;PAT_ID&apos;,patID);//TOKANDEL
+globalChannelMap.put(&apos;N_INT&apos;,interpretationCount);//TOKANDEL
+globalChannelMap.put(&apos;N_VAL&apos;,valuesCount);//TOKANDEL
+globalChannelMap.put(&apos;N_TAR&apos;,targetCount);//TOKANDEL
+globalChannelMap.put(&apos;N_MET&apos;,methodCount);//TOKANDEL
+//*****DONT MODIFY THESE LINES*****//
+////END///
+logger.info(&quot;**** FIN ****&quot;);
+globalChannelMap.put(&apos;OK&apos;,&apos;0&apos;);
+dbConn.close();
+tmpConn.close();
+
+
+</query>
+        <useScript>true</useScript>
+      </properties>
+      <transformer version="3.2.0">
+        <steps>
+          <step>
+            <sequenceNumber>0</sequenceNumber>
+            <name>New Step</name>
+            <script>//******DONT MODIFY THESE LINES******
+
+//var filename=msg[&apos;filename&apos;].toString();
+var database=msg[&apos;database&apos;][&apos;@name&apos;].toString();
+var tmp_name=msg[&apos;database&apos;][&apos;@tmp_name&apos;].toString();
+var user=msg[&apos;database&apos;][&apos;@user&apos;].toString();
+var password=msg[&apos;database&apos;][&apos;@password&apos;].toString();
+
+//*************************************************************************************//
+
+//Functions
+function isEmpty(str) {
+	if(typeof(str)==&apos;undefined&apos;) {
+		return true;
+	}
+    return (!str || 0 == str.length);
+}
+
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+};
+
+function gen_Id() {
+  return s4() + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + s4() + s4();
+}
+
+function replaceText( queryText, text, newText ) {
+	while (queryText.indexOf(text) != -1) {
+		queryText = queryText.replace(text,newText);
+	}
+	return queryText;
+}
+
+function print(text) {
+	logger.error(&quot; &lt;&lt;&lt;&lt;&lt; &quot; + text + &quot; &gt;&gt;&gt;&gt;&gt; &quot;);
+}
+
+function findEntries(path,entries,sectionId) {
+	var classCode;
+	var currentEntry;
+	var entry=[];
+	var label;
+	for (var i=0;!isEmpty(path[i]);i++) {
+		var ignore = false;
+		currentEntry = path[i];
+		entry[&apos;id&apos;] = gen_Id();
+		if (!isEmpty(currentEntry[&apos;procedure&apos;].toString())) {
+			classCode=&apos;procedure&apos;;
+		}
+		else if(!isEmpty(currentEntry[&apos;observation&apos;].toString())){
+			classCode=&apos;observation&apos;;
+			//OLD MESSAGES
+			var criteriaID = &quot;&quot;;
+			var clinicalTrialID = &quot;&quot;;
+			if (!isEmpty(currentEntry[classCode][&apos;criteriaID&apos;][&apos;@code&apos;].toString())) {
+				criteriaID = &quot;-&quot; + currentEntry[classCode][&apos;criteriaID&apos;][&apos;@code&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;clinicalTrialID&apos;][&apos;@code&apos;].toString())) {
+				clinicalTrialID = &quot;-&quot; + currentEntry[classCode][&apos;clinicalTrialID&apos;][&apos;@code&apos;].toString();
+			}
+			entry[&apos;id&apos;] = entry[&apos;id&apos;] +  clinicalTrialID + criteriaID;
+		}
+		else if(!isEmpty(currentEntry[&apos;substanceAdministration&apos;].toString())){//SBADM
+			classCode=&apos;substanceAdministration&apos;;
+			if (!isEmpty(currentEntry[classCode][&apos;code&apos;][&apos;@code&apos;].toString())) {
+				entry[&apos;code&apos;] = currentEntry[classCode][&apos;code&apos;][&apos;@code&apos;].toString();
+				entry[&apos;title&apos;] = currentEntry[classCode][&apos;code&apos;][&apos;@displayName&apos;].toString();
+				entry[&apos;codeVocId&apos;] = currentEntry[classCode][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+			}
+			else {//SBDM code by default
+				entry[&apos;code&apos;] = &quot;432102000&quot;;
+				entry[&apos;title&apos;] = &quot;Administration of substance&quot;;
+				entry[&apos;codeVocId&apos;] = &quot;2.16.840.1.113883.6.96&quot;;
+			}
+			//Entity, role, participation (Manufactured material)
+			var meterialEntity = [];
+			var materialRole = [];
+			var materialParticipation = [];
+			if (!isEmpty(currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedLabeledDrug&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString())) {
+				meterialEntity[&apos;id&apos;] = s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
+				meterialEntity[&apos;classCode&apos;] = &quot;MMAT&quot;;//Manufactured material
+				meterialEntity[&apos;determinerCode&apos;] = &quot;KIND&quot;;
+				meterialEntity[&apos;title&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedLabeledDrug&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+				meterialEntity[&apos;code&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedLabeledDrug&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+				meterialEntity[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedLabeledDrug&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+			}
+			else {
+				meterialEntity[&apos;id&apos;] = s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
+				meterialEntity[&apos;classCode&apos;] = &quot;MMAT&quot;;//Manufactured material
+				meterialEntity[&apos;determinerCode&apos;] = &quot;KIND&quot;;
+				meterialEntity[&apos;title&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedMaterial&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+				meterialEntity[&apos;code&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedMaterial&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+				meterialEntity[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedMaterial&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+			}
+			//insert codeOrig in act table
+			entry[&apos;codeOrig&apos;] = meterialEntity[&apos;code&apos;];			
+
+			materialParticipation[&apos;typeCode&apos;] = &quot;MANU&quot;;
+			materialParticipation[&apos;actId&apos;] = entry[&apos;id&apos;];
+			materialParticipation[&apos;entityId&apos;] = meterialEntity[&apos;id&apos;];
+			materialParticipation[&apos;roleId&apos;] = meterialEntity[&apos;id&apos;];
+
+			materialRole[&apos;id&apos;] = meterialEntity[&apos;id&apos;];
+			materialRole[&apos;classCode&apos;] = &quot;MANU&quot;;
+			materialRole[&apos;entityId&apos;] = meterialEntity[&apos;id&apos;];
+
+			entities.push(meterialEntity);
+			participations.push(materialParticipation);
+			roles.push(materialRole);
+			
+			if (!isEmpty(currentEntry[classCode][&apos;doseQuantity&apos;])) {
+				entry[&apos;doseQuantity&apos;] = currentEntry[classCode][&apos;doseQuantity&apos;][&apos;@value&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;rateQuantity&apos;])) {
+				entry[&apos;rateQuantity&apos;] = currentEntry[classCode][&apos;rateQuantity&apos;][&apos;@value&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;routeCode&apos;][&apos;@code&apos;].toString())) {
+				entry[&apos;routeCode&apos;] = currentEntry[classCode][&apos;routeCode&apos;][&apos;@code&apos;].toString();
+				entry[&apos;routeCodeVocId&apos;] = currentEntry[classCode][&apos;routeCode&apos;][&apos;@codeSystem&apos;].toString();
+				entry[&apos;routeCodeTitle&apos;] = currentEntry[classCode][&apos;routeCode&apos;][&apos;@displayName&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;doseQuantity&apos;][&apos;@unit&apos;].toString())) {
+				entry[&apos;doseQuantityUnit&apos;] = currentEntry[classCode][&apos;doseQuantity&apos;][&apos;@unit&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;rateQuantity&apos;][&apos;@unit&apos;].toString())) {
+				entry[&apos;rateQuantityUnit&apos;] = currentEntry[classCode][&apos;rateQuantity&apos;][&apos;@unit&apos;].toString();
+			}
+		}
+		else if (!isEmpty(currentEntry[&apos;act&apos;].toString())) {
+			classCode = &apos;act&apos;;
+		}
+		else {
+			ignore = true;
+			var subPath = currentEntry[&apos;organizer&apos;][&apos;component&apos;];
+			findEntries(subPath,entries,&quot;&quot;);
+		}
+		entry[&apos;text&apos;]=currentEntry[classCode][&apos;text&apos;].toString();
+		if (!ignore) {
+			if(classCode!=&apos;substanceAdministration&apos;){
+				entry[&apos;code&apos;]=currentEntry[classCode][&apos;code&apos;][&apos;@code&apos;].toString();
+				entry[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+				entry[&apos;title&apos;]=currentEntry[classCode][&apos;code&apos;][&apos;@displayName&apos;].toString();
+			}
+			if (classCode==&apos;act&apos;) {
+				entry[&apos;classCode&apos;] = currentEntry[&apos;act&apos;][&apos;@classCode&apos;].toString();
+			}
+			else {
+				entry[&apos;classCode&apos;]=currentEntry[classCode][&apos;@classCode&apos;].toString();
+			}
+			//Efectivetime_start (there is only one effective time)
+			if(!isEmpty(currentEntry[classCode][&apos;effectiveTime&apos;][&apos;@value&apos;].toString())) {
+				entry[&apos;effectiveTime&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][&apos;@value&apos;].toString();
+			}
+			else if (!isEmpty(currentEntry[classCode][&apos;effectiveTime&apos;][&apos;value&apos;].toString())) {
+				entry[&apos;effectiveTime&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][&apos;value&apos;].toString();
+			}
+			if (isEmpty(entry[&apos;effectiveTime&apos;])) {
+				var j = 0;
+				while (true) { 
+					var etType = &quot;&quot;;
+					try {
+						etType = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;@xsi_type&apos;].toString();
+					}
+					catch (err) {
+						break;
+					}
+					if (etType==&quot;IVL_TS&quot;) {//Efectivetime_start and Efectivetime_end
+						entry[&apos;effectiveTime&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;low&apos;][&apos;@value&apos;].toString();
+						entry[&apos;effectiveTime_end&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;high&apos;][&apos;@value&apos;].toString();
+					}
+					else if (etType==&quot;PIVL_TS&quot;) {//Administration perios
+						entry[&apos;administratioPeriodUnit&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;period&apos;][&apos;@unit&apos;].toString();
+						entry[&apos;administratioPeriodValue&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;period&apos;][&apos;@value&apos;].toString();
+					}
+					j++;
+				}
+			}
+
+			entry[&apos;availabilityTime&apos;]=&apos;20000101&apos;;
+			entry[&apos;targetSites&apos;]=[];
+			for (var j=0;!isEmpty(currentEntry[classCode][&apos;targetSiteCode&apos;][j]);j++) { 
+				var targetSite=[];
+				//TargetSite
+				targetSite[&apos;code&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][j][&apos;@code&apos;].toString();
+				targetSite[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][j][&apos;@codeSystem&apos;].toString();
+				targetSite[&apos;title&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][j][&apos;@displayName&apos;].toString();
+				entry[&apos;targetSites&apos;].push(targetSite);
+				targetSite=[];//reset var
+				//Qualifiers
+				if (!isEmpty(currentEntry[classCode][&apos;targetSiteCode&apos;][j][&apos;qualifier&apos;])) {
+					//Name
+					targetSite[&apos;code&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;name&apos;][&apos;@code&apos;].toString();
+					targetSite[&apos;title&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;name&apos;][&apos;@displayName&apos;].toString();
+					targetSite[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;name&apos;][&apos;@codeSystem&apos;].toString();
+					if (!isEmpty(targetSite[&apos;code&apos;].toString())) {
+						entry[&apos;targetSites&apos;].push(targetSite);
+						targetSite=[];//reset var
+					}
+					//Value
+					targetSite[&apos;code&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;value&apos;][&apos;@code&apos;].toString();
+					targetSite[&apos;title&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;value&apos;][&apos;@displayName&apos;].toString();
+					targetSite[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;value&apos;][&apos;@codeSystem&apos;].toString();
+					if (!isEmpty(targetSite[&apos;code&apos;].toString())) {
+						entry[&apos;targetSites&apos;].push(targetSite);
+						targetSite=[];//reset var
+					}
+				}
+			}
+			entry[&apos;methods&apos;]=[];
+			for (var j=0;!isEmpty(currentEntry[classCode][&apos;methodCode&apos;][j]);j++) { 
+				var method=[];
+				method[&apos;code&apos;]=currentEntry[classCode][&apos;methodCode&apos;][j][&apos;@code&apos;].toString();
+				method[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;methodCode&apos;][j][&apos;@codeSystem&apos;].toString();
+				method[&apos;title&apos;]=currentEntry[classCode][&apos;methodCode&apos;][j][&apos;@displayName&apos;].toString();
+				entry[&apos;methods&apos;].push(method);
+			}
+	
+			//Observation values
+			for (var k=0;!isEmpty(currentEntry[&apos;observation&apos;][&apos;value&apos;][k]);k++) {
+				var currentOV = currentEntry[&apos;observation&apos;][&apos;value&apos;][k];
+				var ov = [];
+				ov[&apos;id&apos;] = entry[&apos;id&apos;];
+				/*type*/
+				if (!isEmpty(currentOV[&apos;xsi_type&apos;].toString())) {
+					ov[&apos;type&apos;] = currentOV[&apos;xsi_type&apos;].toString();
+				}
+				else if (!isEmpty(currentOV[&apos;@xsi_type&apos;].toString())) {
+					ov[&apos;type&apos;] = currentOV[&apos;@xsi_type&apos;].toString();
+				}
+				else {
+					ov[&apos;type&apos;] = &apos;UNDEF&apos;;
+				}
+				/*value*/
+				if (!isEmpty(currentOV[&apos;value&apos;].toString())) {
+					ov[&apos;value&apos;] = currentOV[&apos;value&apos;].toString();
+				}
+				else {
+					ov[&apos;value&apos;] = currentOV[&apos;@value&apos;].toString();
+				}
+				/*unit*/
+				if (!isEmpty(currentOV[&apos;unit&apos;].toString())) {
+					ov[&apos;unit&apos;] = currentOV[&apos;unit&apos;].toString();
+				}
+				else {
+					ov[&apos;unit&apos;] = currentOV[&apos;@unit&apos;].toString();
+				}
+				/*code*/
+				if (!isEmpty(currentOV[&apos;code&apos;].toString())) {
+					ov[&apos;code&apos;] = currentOV[&apos;code&apos;].toString();
+				}
+				else {
+					ov[&apos;code&apos;] = currentOV[&apos;@code&apos;].toString();
+				}
+				/*codeVocId*/
+				if (!isEmpty(currentOV[&apos;codeSystem&apos;].toString())) {
+					ov[&apos;codeVocId&apos;] = currentOV[&apos;codeSystem&apos;];
+				}
+				else {
+					ov[&apos;codeVocId&apos;] = currentOV[&apos;@codeSystem&apos;];
+				}
+				/*title*/
+				if (!isEmpty(currentOV[&apos;displayName&apos;][&apos;@value&apos;].toString())) {
+					ov[&apos;title&apos;] = currentOV[&apos;displayName&apos;][&apos;@value&apos;].toString();
+				}
+				else {
+					ov[&apos;title&apos;] = currentOV[&apos;@displayName&apos;];
+				}
+				/*referenceRanges*/
+				if (!isEmpty(currentEntry[&apos;observation&apos;][&apos;referenceRange&apos;][&apos;low&apos;])) {
+				ov[&apos;referenceRangeMin&apos;] = currentEntry[&apos;observation&apos;][&apos;referenceRange&apos;][&apos;low&apos;];
+				}
+				if (!isEmpty(currentEntry[&apos;observation&apos;][&apos;referenceRange&apos;][&apos;high&apos;])) {
+				ov[&apos;referenceRangeMax&apos;] = currentEntry[&apos;observation&apos;][&apos;referenceRange&apos;][&apos;high&apos;];
+				}
+				observationValues.push(ov);
+			}
+			if (classCode==&apos;act&apos;) {
+				entry[&apos;moodCode&apos;] = currentEntry[&apos;act&apos;][&apos;@moodCode&apos;].toString();
+			}
+			else {
+				entry[&apos;moodCode&apos;]=currentEntry[classCode][&apos;@moodCode&apos;].toString();
+			}
+			if(!isEmpty(currentEntry[classCode][&apos;statusCode&apos;][&apos;@code&apos;].toString())){
+				entry[&apos;statusCode&apos;]=currentEntry[classCode][&apos;statusCode&apos;][&apos;@code&apos;].toString();
+			}
+			//InterpretationCode
+			if (!isEmpty(currentEntry[classCode][&apos;interpretationCode&apos;][&apos;@code&apos;].toString())) {
+				var interp = [];
+				var currentInterpretation = currentEntry[classCode][&apos;interpretationCode&apos;];
+				interp[&apos;id&apos;] = entry[&apos;id&apos;];
+				interp[&apos;code&apos;] = currentInterpretation[&apos;@code&apos;];
+				interp[&apos;codeVocId&apos;] = currentInterpretation[&apos;@codeSystem&apos;];
+				interp[&apos;title&apos;] = currentInterpretation[&apos;@displayName&apos;];
+				interpretationCodes.push(interp);
+			}
+
+			//Participant
+			if (!isEmpty(currentEntry[classCode][&apos;participant&apos;].toString())) {
+				for (var j=0;!isEmpty(currentEntry[classCode][&apos;participant&apos;][j]);j++) {
+					var currentParticipant = currentEntry[classCode][&apos;participant&apos;][j];
+					var role = [];
+					var participation = [];
+					var entity = [];
+					//entity table			
+					entity[&apos;classCode&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;@classCode&apos;].toString();
+					entity[&apos;id&apos;] = s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@code&apos;].toString())) {
+						entity[&apos;code&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+					}
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString())) {
+						entity[&apos;codeVocId&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+					}
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString())) {
+						entity[&apos;title&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+					}
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;name&apos;].toString())) {
+						entity[&apos;name&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;name&apos;].toString();
+					}
+					entity[&apos;determinerCode&apos;] = &quot;KIND&quot;;					
+
+					//Special case: Hostipatl (HB,HU,HR)
+					if (entity[&apos;classCode&apos;]==&quot;HB&quot; || entity[&apos;classCode&apos;]==&quot;HU&quot; || entity[&apos;classCode&apos;]==&quot;HR&quot;) {
+						entity[&apos;desc&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;id&apos;][&apos;@extension&apos;].toString();
+						entity[&apos;determinerCode&apos;] = &quot;INSTANCE&quot;;
+					}
+	 				//participation table
+					if (!isEmpty(currentParticipant[&apos;@typeCode&apos;].toString())) {
+						participation[&apos;typeCode&apos;] = currentParticipant[&apos;@typeCode&apos;].toString();
+					}
+					participation[&apos;actId&apos;] = entry[&apos;id&apos;];
+					participation[&apos;entityId&apos;] = entity[&apos;id&apos;];
+					participation[&apos;roleId&apos;] = entity[&apos;id&apos;];
+					if (isEmpty(participation[&apos;typeCode&apos;])) {
+						participation[&apos;typeCode&apos;] = &quot;PART&quot;;//if there is no another
+					}
+					//role table
+					role[&apos;classCode&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;@classCode&apos;].toString();
+					role[&apos;id&apos;] = entity[&apos;id&apos;];
+					role[&apos;entityId&apos;] = entity[&apos;id&apos;];
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;code&apos;][&apos;@code&apos;].toString())) {
+						role[&apos;code&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+					}
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString())) {
+						role[&apos;name&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+					}
+					entities.push(entity);
+					participations.push(participation);
+					roles.push(role);
+				}
+			}
+		
+			//ActRelationShips or EntryRelationships
+			if (idAs.length&gt;0) {
+				var ars = [];
+				var currentCC = classCodes.pop();
+				ars[&apos;typeCode&apos;] = currentCC;
+				ars[&apos;idA&apos;] = idAs.pop();
+				ars[&apos;idB&apos;] = entry[&apos;id&apos;];
+				actRel.push(ars);
+			}
+		
+			if (!isEmpty(currentEntry[classCode][&apos;actRelationship&apos;].toString())) {
+				label = &apos;actRelationship&apos;;
+			}
+			else if (!isEmpty(currentEntry[classCode][&apos;entryRelationship&apos;].toString())) {
+				label = &apos;entryRelationship&apos;;
+			}
+			else {
+				label = &quot;&quot;;
+			}
+
+			if (label.length&gt;0) {
+				var pt = currentEntry[classCode][label];
+				var aux = [];
+				//Save all actRelationship at this level
+				for (var t=0;!isEmpty(currentEntry[classCode][label][t]);t++) {
+					aux.push(currentEntry[classCode][label][t][&apos;@typeCode&apos;].toString());
+					idAs.push(entry[&apos;id&apos;]);
+				}
+				aux.reverse();
+				for (var a in aux) {
+					classCodes.push(aux[a]);
+				}
+				aux = [];
+	
+				//find more entries inside of the actRelationship
+				findEntries(pt,entries);
+			}
+
+			//Relation with sectionAct
+			if (!isEmpty(sectionId)) {
+				entry[&apos;secId&apos;] = sectionId;
+			}
+			entries.push(entry);
+	
+			//Reset vars
+			entry = [];
+			classCode = null;
+			currentEntry = null;
+		}
+	}
+}
+////END Functions////
+
+//Initial part of the document
+var PSN_Id=msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;id&apos;][0][&apos;@extension&apos;].toString();
+if (!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;birthTime&apos;][&apos;@value&apos;].toString())) {
+	var PSN_BirthDate=msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;birthTime&apos;][&apos;@value&apos;].toString();
+}
+else {
+	//var PSN_BirthDate=&quot;00000000&quot;;
+	var currentDate=new Date();
+	var year=currentDate.getFullYear();
+	var month=currentDate.getMonth()+1;
+	var day=currentDate.getDate();
+	if(month&lt;10) month=&quot;0&quot;+month;
+	if(day&lt;10) day=&quot;0&quot;+day;
+	var PSN_BirthDate=&quot;&quot;+year+month+day;
+}
+if (!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;birthTime&apos;][&apos;@tolerance&apos;].toString())) {
+	var PSN_BirthDateTolerance=msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;birthTime&apos;][&apos;@tolerance&apos;].toString();
+}
+else {
+	var PSN_BirthDateTolerance=&quot;0&quot;;
+}
+if(!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;][&apos;given&apos;].toString())){
+	var PSN_Name = msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;][&apos;given&apos;].toString();
+}
+else if(!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;].toString())){
+	var PSN_Name = msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;].toString();
+}
+else{
+	var PSN_Name = &quot;&quot;;
+}
+
+if(!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;][&apos;family&apos;].toString())){
+	var PSN_Surname = msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;][&apos;family&apos;].toString();
+}
+else{
+	var PSN_Surname = &quot;&quot;;
+}
+
+
+var PSN_Gender=msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;administrativeGenderCode&apos;][&apos;@code&apos;].toString();
+var documentID = msg[&apos;id&apos;][&apos;@root&apos;].toString();
+var documentTitle = msg[&apos;title&apos;].toString();
+var documentDate = &quot;&quot;;
+if (!isEmpty(msg[&apos;effectiveTime&apos;].toString())) {
+	documentDate = msg[&apos;effectiveTime&apos;].toString();
+}
+else if (!isEmpty(msg[&apos;effectiveTime&apos;][&apos;@value&apos;].toString())) {
+	documentDate = msg[&apos;effectiveTime&apos;][&apos;@value&apos;].toString();
+}
+////END Initial part/////
+
+//Find entries
+var entries = [];
+var idAs = [];
+var classCodes = [];
+var actRel=[];
+var observationValues=[];
+var participations = [];
+var roles = [];
+var entities = [];
+var interpretationCodes = [];
+var sectionActs = [];
+
+for (var c=0;!isEmpty(msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c]);c++){
+	var path = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;entry&apos;];
+	var currentSectionAct = [];
+	var sectionId = &quot;&quot;;
+	if (!isEmpty(msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;code&apos;][&apos;@code&apos;].toString())) {
+		currentSectionAct[&apos;id&apos;] = gen_Id();
+		currentSectionAct[&apos;code&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+		currentSectionAct[&apos;codeVocId&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+		currentSectionAct[&apos;title&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+		currentSectionAct[&apos;text&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;text&apos;].toString();
+		currentSectionAct[&apos;effectiveTime&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;effectiveTime&apos;][&apos;@value&apos;].toString();
+		sectionActs.push(currentSectionAct);
+	}
+	sectionId = currentSectionAct[&apos;id&apos;];
+	findEntries(path,entries,sectionId);
+}
+////END Find entries////
+
+//Export vars
+channelMap.put(&apos;PSN_Id&apos;,PSN_Id);
+channelMap.put(&apos;PSN_Name&apos;,PSN_Name);
+channelMap.put(&apos;PSN_Surname&apos;,PSN_Surname);
+channelMap.put(&apos;PSN_BirthDate&apos;,PSN_BirthDate);
+channelMap.put(&apos;PSN_BirthDateTolerance&apos;,PSN_BirthDateTolerance);
+channelMap.put(&apos;PSN_Gender&apos;,PSN_Gender);
+channelMap.put(&apos;entries&apos;,entries);
+channelMap.put(&apos;actRelationship&apos;,actRel);
+channelMap.put(&apos;observationValues&apos;,observationValues);
+channelMap.put(&apos;entities&apos;,entities);
+channelMap.put(&apos;participations&apos;,participations);
+channelMap.put(&apos;roles&apos;,roles);
+channelMap.put(&apos;interpretationCodes&apos;,interpretationCodes);
+channelMap.put(&apos;documentID&apos;,documentID);
+channelMap.put(&apos;documentTitle&apos;,documentTitle);
+channelMap.put(&apos;documentDate&apos;,documentDate);
+channelMap.put(&apos;sectionActs&apos;,sectionActs);
+
+//*****DONT MODIFY THESE LINES******
+//channelMap.put(&apos;filename&apos;,filename);
+channelMap.put(&apos;database&apos;,database);
+channelMap.put(&apos;tmp_name&apos;,tmp_name);
+channelMap.put(&apos;user&apos;,user);
+channelMap.put(&apos;password&apos;,password);
+//***************************************</script>
+            <type>JavaScript</type>
+            <data>
+              <entry>
+                <string>Script</string>
+                <string>//******DONT MODIFY THESE LINES******
+
+//var filename=msg[&apos;filename&apos;].toString();
+var database=msg[&apos;database&apos;][&apos;@name&apos;].toString();
+var tmp_name=msg[&apos;database&apos;][&apos;@tmp_name&apos;].toString();
+var user=msg[&apos;database&apos;][&apos;@user&apos;].toString();
+var password=msg[&apos;database&apos;][&apos;@password&apos;].toString();
+
+//*************************************************************************************//
+
+//Functions
+function isEmpty(str) {
+	if(typeof(str)==&apos;undefined&apos;) {
+		return true;
+	}
+    return (!str || 0 == str.length);
+}
+
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+};
+
+function gen_Id() {
+  return s4() + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + &apos;-&apos; + s4() + s4() + s4();
+}
+
+function replaceText( queryText, text, newText ) {
+	while (queryText.indexOf(text) != -1) {
+		queryText = queryText.replace(text,newText);
+	}
+	return queryText;
+}
+
+function print(text) {
+	logger.error(&quot; &lt;&lt;&lt;&lt;&lt; &quot; + text + &quot; &gt;&gt;&gt;&gt;&gt; &quot;);
+}
+
+function findEntries(path,entries,sectionId) {
+	var classCode;
+	var currentEntry;
+	var entry=[];
+	var label;
+	for (var i=0;!isEmpty(path[i]);i++) {
+		var ignore = false;
+		currentEntry = path[i];
+		entry[&apos;id&apos;] = gen_Id();
+		if (!isEmpty(currentEntry[&apos;procedure&apos;].toString())) {
+			classCode=&apos;procedure&apos;;
+		}
+		else if(!isEmpty(currentEntry[&apos;observation&apos;].toString())){
+			classCode=&apos;observation&apos;;
+			//OLD MESSAGES
+			var criteriaID = &quot;&quot;;
+			var clinicalTrialID = &quot;&quot;;
+			if (!isEmpty(currentEntry[classCode][&apos;criteriaID&apos;][&apos;@code&apos;].toString())) {
+				criteriaID = &quot;-&quot; + currentEntry[classCode][&apos;criteriaID&apos;][&apos;@code&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;clinicalTrialID&apos;][&apos;@code&apos;].toString())) {
+				clinicalTrialID = &quot;-&quot; + currentEntry[classCode][&apos;clinicalTrialID&apos;][&apos;@code&apos;].toString();
+			}
+			entry[&apos;id&apos;] = entry[&apos;id&apos;] +  clinicalTrialID + criteriaID;
+		}
+		else if(!isEmpty(currentEntry[&apos;substanceAdministration&apos;].toString())){//SBADM
+			classCode=&apos;substanceAdministration&apos;;
+			if (!isEmpty(currentEntry[classCode][&apos;code&apos;][&apos;@code&apos;].toString())) {
+				entry[&apos;code&apos;] = currentEntry[classCode][&apos;code&apos;][&apos;@code&apos;].toString();
+				entry[&apos;title&apos;] = currentEntry[classCode][&apos;code&apos;][&apos;@displayName&apos;].toString();
+				entry[&apos;codeVocId&apos;] = currentEntry[classCode][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+			}
+			else {//SBDM code by default
+				entry[&apos;code&apos;] = &quot;432102000&quot;;
+				entry[&apos;title&apos;] = &quot;Administration of substance&quot;;
+				entry[&apos;codeVocId&apos;] = &quot;2.16.840.1.113883.6.96&quot;;
+			}
+			//Entity, role, participation (Manufactured material)
+			var meterialEntity = [];
+			var materialRole = [];
+			var materialParticipation = [];
+			if (!isEmpty(currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedLabeledDrug&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString())) {
+				meterialEntity[&apos;id&apos;] = s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
+				meterialEntity[&apos;classCode&apos;] = &quot;MMAT&quot;;//Manufactured material
+				meterialEntity[&apos;determinerCode&apos;] = &quot;KIND&quot;;
+				meterialEntity[&apos;title&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedLabeledDrug&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+				meterialEntity[&apos;code&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedLabeledDrug&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+				meterialEntity[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedLabeledDrug&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+			}
+			else {
+				meterialEntity[&apos;id&apos;] = s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
+				meterialEntity[&apos;classCode&apos;] = &quot;MMAT&quot;;//Manufactured material
+				meterialEntity[&apos;determinerCode&apos;] = &quot;KIND&quot;;
+				meterialEntity[&apos;title&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedMaterial&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+				meterialEntity[&apos;code&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedMaterial&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+				meterialEntity[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;consumable&apos;][&apos;manufacturedProduct&apos;][&apos;manufacturedMaterial&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+			}
+			//insert codeOrig in act table
+			entry[&apos;codeOrig&apos;] = meterialEntity[&apos;code&apos;];			
+
+			materialParticipation[&apos;typeCode&apos;] = &quot;MANU&quot;;
+			materialParticipation[&apos;actId&apos;] = entry[&apos;id&apos;];
+			materialParticipation[&apos;entityId&apos;] = meterialEntity[&apos;id&apos;];
+			materialParticipation[&apos;roleId&apos;] = meterialEntity[&apos;id&apos;];
+
+			materialRole[&apos;id&apos;] = meterialEntity[&apos;id&apos;];
+			materialRole[&apos;classCode&apos;] = &quot;MANU&quot;;
+			materialRole[&apos;entityId&apos;] = meterialEntity[&apos;id&apos;];
+
+			entities.push(meterialEntity);
+			participations.push(materialParticipation);
+			roles.push(materialRole);
+			
+			if (!isEmpty(currentEntry[classCode][&apos;doseQuantity&apos;])) {
+				entry[&apos;doseQuantity&apos;] = currentEntry[classCode][&apos;doseQuantity&apos;][&apos;@value&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;rateQuantity&apos;])) {
+				entry[&apos;rateQuantity&apos;] = currentEntry[classCode][&apos;rateQuantity&apos;][&apos;@value&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;routeCode&apos;][&apos;@code&apos;].toString())) {
+				entry[&apos;routeCode&apos;] = currentEntry[classCode][&apos;routeCode&apos;][&apos;@code&apos;].toString();
+				entry[&apos;routeCodeVocId&apos;] = currentEntry[classCode][&apos;routeCode&apos;][&apos;@codeSystem&apos;].toString();
+				entry[&apos;routeCodeTitle&apos;] = currentEntry[classCode][&apos;routeCode&apos;][&apos;@displayName&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;doseQuantity&apos;][&apos;@unit&apos;].toString())) {
+				entry[&apos;doseQuantityUnit&apos;] = currentEntry[classCode][&apos;doseQuantity&apos;][&apos;@unit&apos;].toString();
+			}
+			if (!isEmpty(currentEntry[classCode][&apos;rateQuantity&apos;][&apos;@unit&apos;].toString())) {
+				entry[&apos;rateQuantityUnit&apos;] = currentEntry[classCode][&apos;rateQuantity&apos;][&apos;@unit&apos;].toString();
+			}
+		}
+		else if (!isEmpty(currentEntry[&apos;act&apos;].toString())) {
+			classCode = &apos;act&apos;;
+		}
+		else {
+			ignore = true;
+			var subPath = currentEntry[&apos;organizer&apos;][&apos;component&apos;];
+			findEntries(subPath,entries,&quot;&quot;);
+		}
+		entry[&apos;text&apos;]=currentEntry[classCode][&apos;text&apos;].toString();
+		if (!ignore) {
+			if(classCode!=&apos;substanceAdministration&apos;){
+				entry[&apos;code&apos;]=currentEntry[classCode][&apos;code&apos;][&apos;@code&apos;].toString();
+				entry[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+				entry[&apos;title&apos;]=currentEntry[classCode][&apos;code&apos;][&apos;@displayName&apos;].toString();
+			}
+			if (classCode==&apos;act&apos;) {
+				entry[&apos;classCode&apos;] = currentEntry[&apos;act&apos;][&apos;@classCode&apos;].toString();
+			}
+			else {
+				entry[&apos;classCode&apos;]=currentEntry[classCode][&apos;@classCode&apos;].toString();
+			}
+			//Efectivetime_start (there is only one effective time)
+			if(!isEmpty(currentEntry[classCode][&apos;effectiveTime&apos;][&apos;@value&apos;].toString())) {
+				entry[&apos;effectiveTime&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][&apos;@value&apos;].toString();
+			}
+			else if (!isEmpty(currentEntry[classCode][&apos;effectiveTime&apos;][&apos;value&apos;].toString())) {
+				entry[&apos;effectiveTime&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][&apos;value&apos;].toString();
+			}
+			if (isEmpty(entry[&apos;effectiveTime&apos;])) {
+				var j = 0;
+				while (true) { 
+					var etType = &quot;&quot;;
+					try {
+						etType = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;@xsi_type&apos;].toString();
+					}
+					catch (err) {
+						break;
+					}
+					if (etType==&quot;IVL_TS&quot;) {//Efectivetime_start and Efectivetime_end
+						entry[&apos;effectiveTime&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;low&apos;][&apos;@value&apos;].toString();
+						entry[&apos;effectiveTime_end&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;high&apos;][&apos;@value&apos;].toString();
+					}
+					else if (etType==&quot;PIVL_TS&quot;) {//Administration perios
+						entry[&apos;administratioPeriodUnit&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;period&apos;][&apos;@unit&apos;].toString();
+						entry[&apos;administratioPeriodValue&apos;] = currentEntry[classCode][&apos;effectiveTime&apos;][j][&apos;period&apos;][&apos;@value&apos;].toString();
+					}
+					j++;
+				}
+			}
+
+			entry[&apos;availabilityTime&apos;]=&apos;20000101&apos;;
+			entry[&apos;targetSites&apos;]=[];
+			for (var j=0;!isEmpty(currentEntry[classCode][&apos;targetSiteCode&apos;][j]);j++) { 
+				var targetSite=[];
+				//TargetSite
+				targetSite[&apos;code&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][j][&apos;@code&apos;].toString();
+				targetSite[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][j][&apos;@codeSystem&apos;].toString();
+				targetSite[&apos;title&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][j][&apos;@displayName&apos;].toString();
+				entry[&apos;targetSites&apos;].push(targetSite);
+				targetSite=[];//reset var
+				//Qualifiers
+				if (!isEmpty(currentEntry[classCode][&apos;targetSiteCode&apos;][j][&apos;qualifier&apos;])) {
+					//Name
+					targetSite[&apos;code&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;name&apos;][&apos;@code&apos;].toString();
+					targetSite[&apos;title&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;name&apos;][&apos;@displayName&apos;].toString();
+					targetSite[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;name&apos;][&apos;@codeSystem&apos;].toString();
+					if (!isEmpty(targetSite[&apos;code&apos;].toString())) {
+						entry[&apos;targetSites&apos;].push(targetSite);
+						targetSite=[];//reset var
+					}
+					//Value
+					targetSite[&apos;code&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;value&apos;][&apos;@code&apos;].toString();
+					targetSite[&apos;title&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;value&apos;][&apos;@displayName&apos;].toString();
+					targetSite[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;targetSiteCode&apos;][&apos;qualifier&apos;][&apos;value&apos;][&apos;@codeSystem&apos;].toString();
+					if (!isEmpty(targetSite[&apos;code&apos;].toString())) {
+						entry[&apos;targetSites&apos;].push(targetSite);
+						targetSite=[];//reset var
+					}
+				}
+			}
+			entry[&apos;methods&apos;]=[];
+			for (var j=0;!isEmpty(currentEntry[classCode][&apos;methodCode&apos;][j]);j++) { 
+				var method=[];
+				method[&apos;code&apos;]=currentEntry[classCode][&apos;methodCode&apos;][j][&apos;@code&apos;].toString();
+				method[&apos;codeVocId&apos;]=currentEntry[classCode][&apos;methodCode&apos;][j][&apos;@codeSystem&apos;].toString();
+				method[&apos;title&apos;]=currentEntry[classCode][&apos;methodCode&apos;][j][&apos;@displayName&apos;].toString();
+				entry[&apos;methods&apos;].push(method);
+			}
+	
+			//Observation values
+			for (var k=0;!isEmpty(currentEntry[&apos;observation&apos;][&apos;value&apos;][k]);k++) {
+				var currentOV = currentEntry[&apos;observation&apos;][&apos;value&apos;][k];
+				var ov = [];
+				ov[&apos;id&apos;] = entry[&apos;id&apos;];
+				/*type*/
+				if (!isEmpty(currentOV[&apos;xsi_type&apos;].toString())) {
+					ov[&apos;type&apos;] = currentOV[&apos;xsi_type&apos;].toString();
+				}
+				else if (!isEmpty(currentOV[&apos;@xsi_type&apos;].toString())) {
+					ov[&apos;type&apos;] = currentOV[&apos;@xsi_type&apos;].toString();
+				}
+				else {
+					ov[&apos;type&apos;] = &apos;UNDEF&apos;;
+				}
+				/*value*/
+				if (!isEmpty(currentOV[&apos;value&apos;].toString())) {
+					ov[&apos;value&apos;] = currentOV[&apos;value&apos;].toString();
+				}
+				else {
+					ov[&apos;value&apos;] = currentOV[&apos;@value&apos;].toString();
+				}
+				/*unit*/
+				if (!isEmpty(currentOV[&apos;unit&apos;].toString())) {
+					ov[&apos;unit&apos;] = currentOV[&apos;unit&apos;].toString();
+				}
+				else {
+					ov[&apos;unit&apos;] = currentOV[&apos;@unit&apos;].toString();
+				}
+				/*code*/
+				if (!isEmpty(currentOV[&apos;code&apos;].toString())) {
+					ov[&apos;code&apos;] = currentOV[&apos;code&apos;].toString();
+				}
+				else {
+					ov[&apos;code&apos;] = currentOV[&apos;@code&apos;].toString();
+				}
+				/*codeVocId*/
+				if (!isEmpty(currentOV[&apos;codeSystem&apos;].toString())) {
+					ov[&apos;codeVocId&apos;] = currentOV[&apos;codeSystem&apos;];
+				}
+				else {
+					ov[&apos;codeVocId&apos;] = currentOV[&apos;@codeSystem&apos;];
+				}
+				/*title*/
+				if (!isEmpty(currentOV[&apos;displayName&apos;][&apos;@value&apos;].toString())) {
+					ov[&apos;title&apos;] = currentOV[&apos;displayName&apos;][&apos;@value&apos;].toString();
+				}
+				else {
+					ov[&apos;title&apos;] = currentOV[&apos;@displayName&apos;];
+				}
+				/*referenceRanges*/
+				if (!isEmpty(currentEntry[&apos;observation&apos;][&apos;referenceRange&apos;][&apos;low&apos;])) {
+				ov[&apos;referenceRangeMin&apos;] = currentEntry[&apos;observation&apos;][&apos;referenceRange&apos;][&apos;low&apos;];
+				}
+				if (!isEmpty(currentEntry[&apos;observation&apos;][&apos;referenceRange&apos;][&apos;high&apos;])) {
+				ov[&apos;referenceRangeMax&apos;] = currentEntry[&apos;observation&apos;][&apos;referenceRange&apos;][&apos;high&apos;];
+				}
+				observationValues.push(ov);
+			}
+			if (classCode==&apos;act&apos;) {
+				entry[&apos;moodCode&apos;] = currentEntry[&apos;act&apos;][&apos;@moodCode&apos;].toString();
+			}
+			else {
+				entry[&apos;moodCode&apos;]=currentEntry[classCode][&apos;@moodCode&apos;].toString();
+			}
+			if(!isEmpty(currentEntry[classCode][&apos;statusCode&apos;][&apos;@code&apos;].toString())){
+				entry[&apos;statusCode&apos;]=currentEntry[classCode][&apos;statusCode&apos;][&apos;@code&apos;].toString();
+			}
+			//InterpretationCode
+			if (!isEmpty(currentEntry[classCode][&apos;interpretationCode&apos;][&apos;@code&apos;].toString())) {
+				var interp = [];
+				var currentInterpretation = currentEntry[classCode][&apos;interpretationCode&apos;];
+				interp[&apos;id&apos;] = entry[&apos;id&apos;];
+				interp[&apos;code&apos;] = currentInterpretation[&apos;@code&apos;];
+				interp[&apos;codeVocId&apos;] = currentInterpretation[&apos;@codeSystem&apos;];
+				interp[&apos;title&apos;] = currentInterpretation[&apos;@displayName&apos;];
+				interpretationCodes.push(interp);
+			}
+
+			//Participant
+			if (!isEmpty(currentEntry[classCode][&apos;participant&apos;].toString())) {
+				for (var j=0;!isEmpty(currentEntry[classCode][&apos;participant&apos;][j]);j++) {
+					var currentParticipant = currentEntry[classCode][&apos;participant&apos;][j];
+					var role = [];
+					var participation = [];
+					var entity = [];
+					//entity table			
+					entity[&apos;classCode&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;@classCode&apos;].toString();
+					entity[&apos;id&apos;] = s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@code&apos;].toString())) {
+						entity[&apos;code&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+					}
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString())) {
+						entity[&apos;codeVocId&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+					}
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString())) {
+						entity[&apos;title&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+					}
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;name&apos;].toString())) {
+						entity[&apos;name&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;name&apos;].toString();
+					}
+					entity[&apos;determinerCode&apos;] = &quot;KIND&quot;;					
+
+					//Special case: Hostipatl (HB,HU,HR)
+					if (entity[&apos;classCode&apos;]==&quot;HB&quot; || entity[&apos;classCode&apos;]==&quot;HU&quot; || entity[&apos;classCode&apos;]==&quot;HR&quot;) {
+						entity[&apos;desc&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;playingEntity&apos;][&apos;id&apos;][&apos;@extension&apos;].toString();
+						entity[&apos;determinerCode&apos;] = &quot;INSTANCE&quot;;
+					}
+	 				//participation table
+					if (!isEmpty(currentParticipant[&apos;@typeCode&apos;].toString())) {
+						participation[&apos;typeCode&apos;] = currentParticipant[&apos;@typeCode&apos;].toString();
+					}
+					participation[&apos;actId&apos;] = entry[&apos;id&apos;];
+					participation[&apos;entityId&apos;] = entity[&apos;id&apos;];
+					participation[&apos;roleId&apos;] = entity[&apos;id&apos;];
+					if (isEmpty(participation[&apos;typeCode&apos;])) {
+						participation[&apos;typeCode&apos;] = &quot;PART&quot;;//if there is no another
+					}
+					//role table
+					role[&apos;classCode&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;@classCode&apos;].toString();
+					role[&apos;id&apos;] = entity[&apos;id&apos;];
+					role[&apos;entityId&apos;] = entity[&apos;id&apos;];
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;code&apos;][&apos;@code&apos;].toString())) {
+						role[&apos;code&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+					}
+					if (!isEmpty(currentParticipant[&apos;participantRole&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString())) {
+						role[&apos;name&apos;] = currentParticipant[&apos;participantRole&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+					}
+					entities.push(entity);
+					participations.push(participation);
+					roles.push(role);
+				}
+			}
+		
+			//ActRelationShips or EntryRelationships
+			if (idAs.length&gt;0) {
+				var ars = [];
+				var currentCC = classCodes.pop();
+				ars[&apos;typeCode&apos;] = currentCC;
+				ars[&apos;idA&apos;] = idAs.pop();
+				ars[&apos;idB&apos;] = entry[&apos;id&apos;];
+				actRel.push(ars);
+			}
+		
+			if (!isEmpty(currentEntry[classCode][&apos;actRelationship&apos;].toString())) {
+				label = &apos;actRelationship&apos;;
+			}
+			else if (!isEmpty(currentEntry[classCode][&apos;entryRelationship&apos;].toString())) {
+				label = &apos;entryRelationship&apos;;
+			}
+			else {
+				label = &quot;&quot;;
+			}
+
+			if (label.length&gt;0) {
+				var pt = currentEntry[classCode][label];
+				var aux = [];
+				//Save all actRelationship at this level
+				for (var t=0;!isEmpty(currentEntry[classCode][label][t]);t++) {
+					aux.push(currentEntry[classCode][label][t][&apos;@typeCode&apos;].toString());
+					idAs.push(entry[&apos;id&apos;]);
+				}
+				aux.reverse();
+				for (var a in aux) {
+					classCodes.push(aux[a]);
+				}
+				aux = [];
+	
+				//find more entries inside of the actRelationship
+				findEntries(pt,entries);
+			}
+
+			//Relation with sectionAct
+			if (!isEmpty(sectionId)) {
+				entry[&apos;secId&apos;] = sectionId;
+			}
+			entries.push(entry);
+	
+			//Reset vars
+			entry = [];
+			classCode = null;
+			currentEntry = null;
+		}
+	}
+}
+////END Functions////
+
+//Initial part of the document
+var PSN_Id=msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;id&apos;][0][&apos;@extension&apos;].toString();
+if (!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;birthTime&apos;][&apos;@value&apos;].toString())) {
+	var PSN_BirthDate=msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;birthTime&apos;][&apos;@value&apos;].toString();
+}
+else {
+	//var PSN_BirthDate=&quot;00000000&quot;;
+	var currentDate=new Date();
+	var year=currentDate.getFullYear();
+	var month=currentDate.getMonth()+1;
+	var day=currentDate.getDate();
+	if(month&lt;10) month=&quot;0&quot;+month;
+	if(day&lt;10) day=&quot;0&quot;+day;
+	var PSN_BirthDate=&quot;&quot;+year+month+day;
+}
+if (!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;birthTime&apos;][&apos;@tolerance&apos;].toString())) {
+	var PSN_BirthDateTolerance=msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;birthTime&apos;][&apos;@tolerance&apos;].toString();
+}
+else {
+	var PSN_BirthDateTolerance=&quot;0&quot;;
+}
+if(!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;][&apos;given&apos;].toString())){
+	var PSN_Name = msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;][&apos;given&apos;].toString();
+}
+else if(!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;].toString())){
+	var PSN_Name = msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;].toString();
+}
+else{
+	var PSN_Name = &quot;&quot;;
+}
+
+if(!isEmpty(msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;][&apos;family&apos;].toString())){
+	var PSN_Surname = msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;name&apos;][&apos;family&apos;].toString();
+}
+else{
+	var PSN_Surname = &quot;&quot;;
+}
+
+
+var PSN_Gender=msg[&apos;recordTarget&apos;][&apos;patientRole&apos;][&apos;patient&apos;][&apos;administrativeGenderCode&apos;][&apos;@code&apos;].toString();
+var documentID = msg[&apos;id&apos;][&apos;@root&apos;].toString();
+var documentTitle = msg[&apos;title&apos;].toString();
+var documentDate = &quot;&quot;;
+if (!isEmpty(msg[&apos;effectiveTime&apos;].toString())) {
+	documentDate = msg[&apos;effectiveTime&apos;].toString();
+}
+else if (!isEmpty(msg[&apos;effectiveTime&apos;][&apos;@value&apos;].toString())) {
+	documentDate = msg[&apos;effectiveTime&apos;][&apos;@value&apos;].toString();
+}
+////END Initial part/////
+
+//Find entries
+var entries = [];
+var idAs = [];
+var classCodes = [];
+var actRel=[];
+var observationValues=[];
+var participations = [];
+var roles = [];
+var entities = [];
+var interpretationCodes = [];
+var sectionActs = [];
+
+for (var c=0;!isEmpty(msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c]);c++){
+	var path = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;entry&apos;];
+	var currentSectionAct = [];
+	var sectionId = &quot;&quot;;
+	if (!isEmpty(msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;code&apos;][&apos;@code&apos;].toString())) {
+		currentSectionAct[&apos;id&apos;] = gen_Id();
+		currentSectionAct[&apos;code&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;code&apos;][&apos;@code&apos;].toString();
+		currentSectionAct[&apos;codeVocId&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;code&apos;][&apos;@codeSystem&apos;].toString();
+		currentSectionAct[&apos;title&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;code&apos;][&apos;@displayName&apos;].toString();
+		currentSectionAct[&apos;text&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;text&apos;].toString();
+		currentSectionAct[&apos;effectiveTime&apos;] = msg[&apos;component&apos;][&apos;structuredBody&apos;][&apos;component&apos;][c][&apos;section&apos;][&apos;effectiveTime&apos;][&apos;@value&apos;].toString();
+		sectionActs.push(currentSectionAct);
+	}
+	sectionId = currentSectionAct[&apos;id&apos;];
+	findEntries(path,entries,sectionId);
+}
+////END Find entries////
+
+//Export vars
+channelMap.put(&apos;PSN_Id&apos;,PSN_Id);
+channelMap.put(&apos;PSN_Name&apos;,PSN_Name);
+channelMap.put(&apos;PSN_Surname&apos;,PSN_Surname);
+channelMap.put(&apos;PSN_BirthDate&apos;,PSN_BirthDate);
+channelMap.put(&apos;PSN_BirthDateTolerance&apos;,PSN_BirthDateTolerance);
+channelMap.put(&apos;PSN_Gender&apos;,PSN_Gender);
+channelMap.put(&apos;entries&apos;,entries);
+channelMap.put(&apos;actRelationship&apos;,actRel);
+channelMap.put(&apos;observationValues&apos;,observationValues);
+channelMap.put(&apos;entities&apos;,entities);
+channelMap.put(&apos;participations&apos;,participations);
+channelMap.put(&apos;roles&apos;,roles);
+channelMap.put(&apos;interpretationCodes&apos;,interpretationCodes);
+channelMap.put(&apos;documentID&apos;,documentID);
+channelMap.put(&apos;documentTitle&apos;,documentTitle);
+channelMap.put(&apos;documentDate&apos;,documentDate);
+channelMap.put(&apos;sectionActs&apos;,sectionActs);
+
+//*****DONT MODIFY THESE LINES******
+//channelMap.put(&apos;filename&apos;,filename);
+channelMap.put(&apos;database&apos;,database);
+channelMap.put(&apos;tmp_name&apos;,tmp_name);
+channelMap.put(&apos;user&apos;,user);
+channelMap.put(&apos;password&apos;,password);
+//***************************************</string>
+              </entry>
+            </data>
+          </step>
+        </steps>
+        <inboundTemplate encoding="base64"></inboundTemplate>
+        <outboundTemplate encoding="base64"></outboundTemplate>
+        <inboundDataType>XML</inboundDataType>
+        <outboundDataType>XML</outboundDataType>
+        <inboundProperties class="com.mirth.connect.plugins.datatypes.xml.XMLDataTypeProperties" version="3.2.0">
+          <serializationProperties class="com.mirth.connect.plugins.datatypes.xml.XMLSerializationProperties" version="3.2.0">
+            <stripNamespaces>false</stripNamespaces>
+          </serializationProperties>
+          <batchProperties class="com.mirth.connect.plugins.datatypes.xml.XMLBatchProperties" version="3.2.0">
+            <splitType>Element_Name</splitType>
+            <elementName></elementName>
+            <level>1</level>
+            <query></query>
+            <batchScript></batchScript>
+          </batchProperties>
+        </inboundProperties>
+        <outboundProperties class="com.mirth.connect.plugins.datatypes.xml.XMLDataTypeProperties" version="3.2.0">
+          <serializationProperties class="com.mirth.connect.plugins.datatypes.xml.XMLSerializationProperties" version="3.2.0">
+            <stripNamespaces>false</stripNamespaces>
+          </serializationProperties>
+          <batchProperties class="com.mirth.connect.plugins.datatypes.xml.XMLBatchProperties" version="3.2.0">
+            <splitType>Element_Name</splitType>
+            <elementName></elementName>
+            <level>1</level>
+            <query></query>
+            <batchScript></batchScript>
+          </batchProperties>
+        </outboundProperties>
+      </transformer>
+      <responseTransformer version="3.2.0">
+        <steps/>
+        <inboundDataType>XML</inboundDataType>
+        <outboundDataType>XML</outboundDataType>
+        <inboundProperties class="com.mirth.connect.plugins.datatypes.xml.XMLDataTypeProperties" version="3.2.0">
+          <serializationProperties class="com.mirth.connect.plugins.datatypes.xml.XMLSerializationProperties" version="3.2.0">
+            <stripNamespaces>true</stripNamespaces>
+          </serializationProperties>
+          <batchProperties class="com.mirth.connect.plugins.datatypes.xml.XMLBatchProperties" version="3.2.0">
+            <splitType>Element_Name</splitType>
+            <elementName></elementName>
+            <level>1</level>
+            <query></query>
+            <batchScript></batchScript>
+          </batchProperties>
+        </inboundProperties>
+        <outboundProperties class="com.mirth.connect.plugins.datatypes.xml.XMLDataTypeProperties" version="3.2.0">
+          <serializationProperties class="com.mirth.connect.plugins.datatypes.xml.XMLSerializationProperties" version="3.2.0">
+            <stripNamespaces>true</stripNamespaces>
+          </serializationProperties>
+          <batchProperties class="com.mirth.connect.plugins.datatypes.xml.XMLBatchProperties" version="3.2.0">
+            <splitType>Element_Name</splitType>
+            <elementName></elementName>
+            <level>1</level>
+            <query></query>
+            <batchScript></batchScript>
+          </batchProperties>
+        </outboundProperties>
+      </responseTransformer>
+      <filter version="3.2.0">
+        <rules/>
+      </filter>
+      <transportName>Database Writer</transportName>
+      <mode>DESTINATION</mode>
+      <enabled>true</enabled>
+      <waitForPrevious>true</waitForPrevious>
+    </connector>
+  </destinationConnectors>
+  <preprocessingScript>// Modify the message variable below to pre process data
+
+logger.info(&apos;Message received&apos;);
+
+globalChannelMap.put(&apos;OK&apos;,&apos;1&apos;);
+
+return message;</preprocessingScript>
+  <postprocessingScript>// This script executes once after a message has been processed
+
+if (globalChannelMap.get(&apos;OK&apos;)==0)
+{
+if(parseInt(globalChannelMap.get(&apos;N_ENT_A&apos;))&gt;0){
+responseMap.put(&apos;respond&apos;,  ResponseFactory.getSentResponse(&quot;[&quot;+DateUtil.getCurrentDate(&quot;yyyy/MM/dd HH:mm:ss&quot;)+&quot;] Message processed and inserted correctly with:\n&quot;+&quot;Patient ID: &quot;+globalChannelMap.get(&apos;PAT_ID&apos;)+&quot;\n&quot;+parseInt(globalChannelMap.get(&apos;N_OBS&apos;))+&quot; observations\n&quot;+parseInt(globalChannelMap.get(&apos;N_PROC&apos;))+&quot; procedures\n&quot;+parseInt(globalChannelMap.get(&apos;N_SBADM&apos;))+&quot; substance administrations\n&quot;+parseInt(globalChannelMap.get(&apos;N_ENT_B&apos;))+&quot; entities, &quot;+parseInt(globalChannelMap.get(&apos;N_ENT_A&apos;))+&quot; already stored\n&quot;+parseInt(globalChannelMap.get(&apos;N_TAR&apos;))+&quot; target sites\n&quot;+parseInt(globalChannelMap.get(&apos;N_MET&apos;))+&quot; method codes\n&quot;+parseInt(globalChannelMap.get(&apos;N_VAL&apos;))+&quot; observation values\n&quot;+parseInt(globalChannelMap.get(&apos;N_INT&apos;))+&quot; interpretation codes&quot;));
+}
+else{
+responseMap.put(&apos;respond&apos;,  ResponseFactory.getSentResponse(&quot;[&quot;+DateUtil.getCurrentDate(&quot;yyyy/MM/dd HH:mm:ss&quot;)+&quot;] Message processed and inserted correctly with:\n&quot;+&quot;Patient ID: &quot;+globalChannelMap.get(&apos;PAT_ID&apos;)+&quot;\n&quot;+parseInt(globalChannelMap.get(&apos;N_OBS&apos;))+&quot; observations\n&quot;+parseInt(globalChannelMap.get(&apos;N_PROC&apos;))+&quot; procedures\n&quot;+parseInt(globalChannelMap.get(&apos;N_SBADM&apos;))+&quot; substance administrations\n&quot;+parseInt(globalChannelMap.get(&apos;N_ENT_B&apos;))+&quot; entities\n&quot;+parseInt(globalChannelMap.get(&apos;N_TAR&apos;))+&quot; target sites\n&quot;+parseInt(globalChannelMap.get(&apos;N_MET&apos;))+&quot; method codes\n&quot;+parseInt(globalChannelMap.get(&apos;N_VAL&apos;))+&quot; observation values\n&quot;+parseInt(globalChannelMap.get(&apos;N_INT&apos;))+&quot; interpretation codes&quot;));
+}
+	}
+else if (globalChannelMap.get(&apos;OK&apos;)==1)
+{
+	var log = FileUtil.read(&apos;logs/mirth.log&apos;);
+
+	log = log.substring(log.lastIndexOf(&apos;Message received&apos;)+17, log.length());
+
+	responseMap.put(&apos;respond&apos;,  ResponseFactory.getErrorResponse(log));
+}
+
+
+return;</postprocessingScript>
+  <deployScript>// This script executes once when the channel is deployed
+// You only have access to the globalMap and globalChannelMap here to persist data
+return;</deployScript>
+  <undeployScript>// This script executes once when the channel is undeployed
+// You only have access to the globalMap and globalChannelMap here to persist data
+return;</undeployScript>
+  <properties version="3.2.0">
+    <clearGlobalChannelMap>true</clearGlobalChannelMap>
+    <messageStorageMode>DEVELOPMENT</messageStorageMode>
+    <encryptData>false</encryptData>
+    <removeContentOnCompletion>false</removeContentOnCompletion>
+    <removeAttachmentsOnCompletion>false</removeAttachmentsOnCompletion>
+    <initialState>STARTED</initialState>
+    <storeAttachments>false</storeAttachments>
+    <tags class="linked-hash-set"/>
+    <metaDataColumns>
+      <metaDataColumn>
+        <name>SOURCE</name>
+        <type>STRING</type>
+        <mappingName>mirth_source</mappingName>
+      </metaDataColumn>
+      <metaDataColumn>
+        <name>TYPE</name>
+        <type>STRING</type>
+        <mappingName>mirth_type</mappingName>
+      </metaDataColumn>
+    </metaDataColumns>
+    <attachmentProperties>
+      <type>None</type>
+      <properties/>
+    </attachmentProperties>
+    <archiveEnabled>true</archiveEnabled>
+    <resourceIds class="linked-hash-set">
+      <string>Default Resource</string>
+    </resourceIds>
+  </properties>
+</channel>

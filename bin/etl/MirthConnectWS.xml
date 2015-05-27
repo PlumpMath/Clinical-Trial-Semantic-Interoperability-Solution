@@ -92,19 +92,19 @@
           </resourceIds>
         </destinationConnectorProperties>
         <driver>com.mysql.jdbc.Driver</driver>
-        <url>jdbc:mysql://kandel.dia.fi.upm.es:3306/hl7rim_mysql2</url>
+        <url>jdbc:mysql://localhost:3306/hl7rim_mysql2</url>
         <username>service</username>
         <password>!p3p1n0!</password>
         <query>
 //*****DONT MODIFY THESE LINES*****//
 
-var dbConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/&apos;+$(&apos;database&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
+var dbConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://localhost:3306/&apos;+$(&apos;database&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
 logger.info(&quot;**** PROCESSING A MESSAGE ****&quot;);
 
 //*************************************************************************************//
 
 //Connection to temporal database
-var tmpConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/&apos;+$(&apos;tmp_name&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
+var tmpConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://localhost:3306/&apos;+$(&apos;tmp_name&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
 
 /*IMPORTANT NOTE: The next symbol is used to identify where a query for temporal database is done
 /*$$*/
@@ -267,7 +267,7 @@ for (var a in sectionActs) {
 // FILENAME ACT
 // If the file already exists in the database delete previous acts from database and introduce new ones
 if (filenameIntroduced&gt;0){
-	var delConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/&apos;+$(&apos;database&apos;) +&apos;_deleted&apos;,$(&apos;user&apos;),$(&apos;password&apos;));
+	var delConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://localhost:3306/&apos;+$(&apos;database&apos;) +&apos;_deleted&apos;,$(&apos;user&apos;),$(&apos;password&apos;));
 	queryRes= dbConn.executeCachedQuery(&quot;SELECT actrelationship.idA FROM actrelationship WHERE actrelationship.idB=&apos;&quot;+documentID+&quot;&apos;&quot; );
 
 	//Copy msg to deleted database
@@ -312,8 +312,8 @@ if (filenameIntroduced&gt;0){
 	queryRes = dbConn.executeCachedQuery(&quot;SHOW DATABASES WHERE `database`=&apos;normalized_&quot;+$(&apos;database&apos;)+&quot;&apos;&quot;);
 	var dbExists = queryRes.next();
 	if (dbExists) {//THE NORMALIZED DATABASE EXISTS
-		var normalizedConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/normalized_&apos;+$(&apos;database&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
-		var normalizedDelConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://kandel.dia.fi.upm.es:3306/normalized_&apos;+$(&apos;database&apos;)+&apos;_deleted&apos;,$(&apos;user&apos;),$(&apos;password&apos;));	
+		var normalizedConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://localhost:3306/normalized_&apos;+$(&apos;database&apos;),$(&apos;user&apos;),$(&apos;password&apos;));
+		var normalizedDelConn = DatabaseConnectionFactory.createDatabaseConnection(&apos;com.mysql.jdbc.Driver&apos;,&apos;jdbc:mysql://localhost:3306/normalized_&apos;+$(&apos;database&apos;)+&apos;_deleted&apos;,$(&apos;user&apos;),$(&apos;password&apos;));	
 		queryRes = normalizedConn.executeCachedQuery(&quot;SELECT actrelationship.idA FROM actrelationship WHERE actrelationship.idB=&apos;&quot;+documentID+&quot;&apos;&quot; );
 		normalizedDelConn.executeUpdate(&quot;INSERT INTO act SELECT * FROM normalized_&quot;+$(&apos;database&apos;)+&quot;.act WHERE act.id=&apos;&quot;+documentID+&quot;&apos;&quot;);
 		
@@ -620,16 +620,16 @@ for (var a in interpretationCodes) {
 	tmpConn.executeUpdate(query);
 }
 
-globalChannelMap.put(&apos;N_OBS&apos;,observationCount);//TOKANDEL
-globalChannelMap.put(&apos;N_PROC&apos;,procCount);//TOKANDEL
-globalChannelMap.put(&apos;N_SBADM&apos;,sbadmCount);//TOKANDEL
-globalChannelMap.put(&apos;N_ENT_A&apos;,entityCountA);//TOKANDEL
-globalChannelMap.put(&apos;N_ENT_B&apos;,entityCountB);//TOKANDEL
-globalChannelMap.put(&apos;PAT_ID&apos;,patID);//TOKANDEL
-globalChannelMap.put(&apos;N_INT&apos;,interpretationCount);//TOKANDEL
-globalChannelMap.put(&apos;N_VAL&apos;,valuesCount);//TOKANDEL
-globalChannelMap.put(&apos;N_TAR&apos;,targetCount);//TOKANDEL
-globalChannelMap.put(&apos;N_MET&apos;,methodCount);//TOKANDEL
+globalChannelMap.put(&apos;N_OBS&apos;,observationCount);
+globalChannelMap.put(&apos;N_PROC&apos;,procCount);
+globalChannelMap.put(&apos;N_SBADM&apos;,sbadmCount);
+globalChannelMap.put(&apos;N_ENT_A&apos;,entityCountA);
+globalChannelMap.put(&apos;N_ENT_B&apos;,entityCountB);
+globalChannelMap.put(&apos;PAT_ID&apos;,patID);
+globalChannelMap.put(&apos;N_INT&apos;,interpretationCount);
+globalChannelMap.put(&apos;N_VAL&apos;,valuesCount);
+globalChannelMap.put(&apos;N_TAR&apos;,targetCount);
+globalChannelMap.put(&apos;N_MET&apos;,methodCount);
 //*****DONT MODIFY THESE LINES*****//
 ////END///
 logger.info(&quot;**** FIN ****&quot;);

@@ -136,12 +136,12 @@ NOTE: This service contains a stub to CoreDataset Service on this url: http://lo
 
 6. Data Push Service deployment
 
-Data Push service allows storing new data on databases using HL7 v3 messages, in addition, the service provides a method to execute a dump file and recover the databases.
+Data Push service allows storing new data on databases using HL7 v3 messages. In addition, the service provides a method to execute a dump file and recover the databases and a method rollback which allows undo changes to a certain given date.
 
 Copy “DataPushService.war” file on your tomcat webapps folder and restart tomcat with the correct permissions, tomcat7 user and RW flags.
 Use the wsdl file to generate a service client.
 
-Data Push service provides two method:
+Data Push service provides three methods:
 
 - storeData
 
@@ -150,6 +150,10 @@ Stores new data from HL7 v3 messages. The data are stored without normalization 
 - erase_Data
 
 Erase both databases, normalized and non-normalized executing “dump_normalized_testCV.sql” and “dump_testCV.sql” files.
+
+- rollback
+
+Undo changes to a certain date using "testcv_deleted" and "normalized_testcv_deleted" databases. Both databases store messages which have been reloaded using method storeData into "testcv" and "normalized_testcv" databases.
 
 The war file is set up to store data on “testCV” and “normalized_testCV” database. To change the databases, the files “properties.config” and “propertiesNormalization.config” should be modified. This file is contained on “DataPushService” folder, inside “WebContent/config/”.
 

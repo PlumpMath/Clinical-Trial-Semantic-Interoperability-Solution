@@ -28,32 +28,32 @@ It is needed to increase the java heap memory on catalina.sh (/usr/share/tomcat7
 
 Mirth Connect is needed in order to do the ETL process to store HL7 v3 messages on databases.
 
-- Download Mirth Connect for Linux (RPM) http://www.mirthcorp.com/community/downloads?form=false
-- Extract RPM file on your personal directory
-- Go to mirth connect conf directory (cd ~/opt/mirthconnect/conf)
-- Modify mirth.properties (sudo nano mirth.properties)
+- Download Mirth Connect for Linux (wget http://downloads.mirthcorp.com/connect/3.2.1.7650.b40/mirthconnect-3.2.1.7650.b40-unix.sh)
+- Change file permissions (sudo chmod a+x mirthconnect-3.2.1.7650.b40-unix.sh)
+- Install mirth connect (sudo bash mirthconnect-3.2.1.7650.b40-unix.sh)
+	- Select defaults options until Network Ports where the port should be changed to:
 
-        ...
-	# ports
-	http.port = 8081
-	https.port = 8444
-	...
+		...
+		Administrator Launcher Port
+		8081
+		Administrator Port
+		8444
+		...
 
-- Save changes.
-- Modify mirth-cli-config.properties (sudo nano mirth-cli-config.properties)
-
-	address=https://127.0.0.1:8444
-	...
-
-- Save changes.
-- Go to mirth connect folder (cd ~/opt/mirthconnect)
+	- Path to application data should be: /usr/local/mirthconnect/appdata
+	- Path to logs should be: /usr/local/mirthconnect/logs
+	- Finish installation and select Run Mirth Connect Service Manager
+- Go to mirth connect directory (cd /usr/local/mirthconnect)
 - Init command line interface (java -jar mirth-cli-launcher.jar -a https://127.0.0.1:8444 -u admin -p admin) 
 - Import channel MirthConnectWS.xml (import ["path to file"]/MirthConnectWS.xml)
+- Deploy channel (deploy)
 - Quit command line interface (QUIT)
 - Init mirth connect service from mirth connect directory (sudo ./mcservice start)
 
 The ETL process is now deployed and ready to be used by the Data Push Service.
 Data Push Service has a stub to this url http://localhost:8091/services/MirthConnectWS. So it is important not to change name and port.
+
+Whenever the Data Push Service is used Mirth Connect should be running.   
 
 2. CREATE CDM
 

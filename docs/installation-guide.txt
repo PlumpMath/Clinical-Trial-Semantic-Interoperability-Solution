@@ -81,6 +81,7 @@ Whenever the Data Push Service is used Mirth Connect should be running.
 Terminology Service is needed in order to translate concepts which are not into the Core Dataset Service. 
 
 Create a new schema on your SQL server called "metathesaurus".
+	CREATE SCHEMA metathesaurus;
 
 Execute file "metathesaurus_schema.sql" on "metathesaurus".
 

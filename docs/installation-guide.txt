@@ -1,11 +1,10 @@
 1. REQUIREMENTS
 
-- These instructions are made to deploy the platform over Apache Tomcat-7.0.52 and java jdk1.7.0_75 on UNIX.
+- These instructions are made to deploy the platform over Apache Tomcat7 and java 7 on UNIX.
 
 1.1 DATABASE
 	
 sudo apt-get install mysql-server mysql-common mysql-client
-sudo apt-get install mysql-workbench
 
 This example is based on a database with the following connection parameters:
 
@@ -14,14 +13,36 @@ This example is based on a database with the following connection parameters:
 	Username = testCV
 	Password = testCV
 
-To create the user testCV and provide privileges execute create_user.sql on your localhost connection.
+To create the user testCV and provide privileges execute create_user.sql on your localhost connection. Located on /bin/sql
+
+mysql -u USER -p
+source /PATH_TO/create_user.sql
 
 Whether a different connection is used, these parameters should be modify on all properties files of every service and generate new war files.
 
 1.2 Java and tomcat configuration
+1.2.1 Installation of Tomcat7 
+Install tomcat7  with all the dependencies (it will install openjdk but we will change after)
+	sudo apt-get install tomcat7
+	
+1.2.2 Installation and configuration of JAVA JDK
+Now install Java 7
+	sudo apt-get install python-software-properties
+	sudo add-apt-repository ppa:webupd8team/java
+	sudo apt-get update
+	sudo apt-get install oracle-java7-installer
 
-It is needed to increase the java heap memory on catalina.sh (/usr/share/tomcat7/bin)
+Let's see the installed java versions
+	sudo update-alternatives --config java
 
+Change the java version used in Tomcat7
+	sudo vi /etc/default/tomcat7
+Replace the variable JAVA_HOME with the java 7 path. In the example 
+JAVA_HOME=/usr/lib/jvm/java-7-oracle
+
+It is needed to increase the java heap memory on catalina.sh (/usr/share/tomcat7/bin/catalina.sh)
+
+Add the variable CATALINA_OPTS on catalina.sh and then restart the machine
 	CATALINA_OPTS="-Xms512M -Xmx2048M"
 
 1.3. Mirth Connect

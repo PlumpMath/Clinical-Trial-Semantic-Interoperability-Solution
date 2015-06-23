@@ -1,9 +1,9 @@
-<template version="1.00" id="002" description="Template for querying observations">
-	<templateClass>Observation</templateClass>
+<template version="1.00" id="002" description="Template for querying entities">
+	<templateClass>Entity</templateClass>
 	<queryLanguage>SQL</queryLanguage>
 	<rimClasses>
 		<rimRelationship>
-			<rimClass>Observation</rimClass>
+			<rimClass>Entity</rimClass>
 			<rimAttribute>code</rimAttribute>
 		</rimRelationship>
 	</rimClasses>
@@ -16,12 +16,56 @@
 			act a 
 			INNER JOIN participation p ON (a.id = p.actId)
 			INNER JOIN v_person v_p ON (p.entityId = v_p.id) 
+			INNER JOIN participation p2 ON (a.id = p2.actId)
+			INNER JOIN entity e ON (p2.entityId = e.id)
 			$$OptionalStructures$$
-			WHERE ((a.code IN (isAnySubclassOf(%Observation_code%))) $$OptionalFilters$$)
+			WHERE ((e.code IN (isAnySubclassOf(%Entity_code%))) $$OptionalFilters$$)
 			;
 		]]>
 	</sqlQuery>
 	<optionals>
+		<OptionalStructure id="partType">
+			<OptionalHeaderAttributes id="partType" tag="$$optionalAttributes$$">, p2.typeCode AS partType
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="partType" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="partType" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="entityId">
+			<OptionalHeaderAttributes id="entityId" tag="$$optionalAttributes$$">, e.id AS entityId
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="entityId" tag = "$$OptionalStructures$$">			
+				$$OptionalStructures$$	
+			</optionalTable>
+			<OptionalFilter id="entityId" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalFilters$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>	
+			</OptionalFilter>
+		</OptionalStructure>
+		<OptionalStructure id="entityCode">
+			<OptionalHeaderAttributes id="entityCode" tag="$$optionalAttributes$$">, e.code AS entityCode
+				$$optionalAttributes$$</OptionalHeaderAttributes>
+			<OptionalFilter id="entityCode" tag="$$OptionalStructures$$">
+				<queryFilter>
+					$$OptionalStructures$$
+				</queryFilter>
+				<filterAttributes>
+				</filterAttributes>
+				<queryRetrieval>
+					$$OptionalStructures$$
+				</queryRetrieval>	
+			</OptionalFilter>
+		</OptionalStructure>
 		<OptionalStructure id="classCode">
 			<OptionalHeaderAttributes id="classCode" tag="$$optionalAttributes$$">, a.classCode AS classCode
 				$$optionalAttributes$$</OptionalHeaderAttributes>
@@ -204,155 +248,32 @@
 				</filterAttributes>	
 			</OptionalFilter>
 		</OptionalStructure>
-		<OptionalStructure id="valueFilterNoRanges">
-			<OptionalHeaderAttributes id="valueFilterNoRanges" tag="$$optionalAttributes$$">, v.value AS value , v.units AS units $$optionalAttributes$$</OptionalHeaderAttributes>
-			<optionalTable id="valueFilterNoRanges" tag = "$$OptionalStructures$$">			
+		<OptionalStructure id="role">
+			<OptionalHeaderAttributes id="role" tag="$$optionalAttributes$$">, r.id AS roleId, r.classCode AS roleClassCode, r.code AS roleCode, r.codeVocId AS roleCodeVocId, r.codeOrig AS roleCodeOrig, r.codeOrigVocId AS roleCodeOrigVocId, r.title AS roleTitle $$optionalAttributes$$</OptionalHeaderAttributes>
+			<optionalTable id="role" tag = "$$OptionalStructures$$">			
 				<![CDATA[
-					INNER JOIN actobservationvalues v ON (a.id = v.id)
+					INNER JOIN role r ON (p2.roleId = r.id)
 					$$OptionalStructures$$
 				]]>		
 			</optionalTable>
-			<OptionalFilter id="valueFilterNoRanges" tag="$$OptionalFilters$$">
-				<queryFilter>
-					<![CDATA[
-						AND (v.value $$operator$$ $$comparedValue$$) $$OptionalFilters$$
-					]]>
-				</queryFilter>
-				<filterAttributes>
-					<attribute id="operator:eq" tag="$$operator$$">=</attribute>
-					<attribute id="operator:nq" tag="$$operator$$">!=</attribute>
-					<attribute id="operator:lt" tag="$$operator$$"><![CDATA[<]]></attribute>
-					<attribute id="operator:gt" tag="$$operator$$">></attribute>
-					<attribute id="operator:lteq" tag="$$operator$$"><![CDATA[<=]]></attribute>
-					<attribute id="operator:gteq" tag="$$operator$$">>=</attribute>
-					<attribute id="value" tag="$$comparedValue$$"></attribute>
-				</filterAttributes>				
-			</OptionalFilter>						
-		</OptionalStructure>
-		<OptionalStructure id="valueFilter">
-			<OptionalHeaderAttributes id="valueFilter" tag="$$optionalAttributes$$">, v.value AS value , v.units AS units , v.referenceRangeMin AS refRangeMin , referenceRangeMax AS refRangeMax $$optionalAttributes$$</OptionalHeaderAttributes>
-			<optionalTable id="valueFilter" tag = "$$OptionalStructures$$">			
-				<![CDATA[
-					INNER JOIN actobservationvalues v ON (a.id = v.id)
-					$$OptionalStructures$$
-				]]>		
-			</optionalTable>
-			<OptionalFilter id="valueFilter" tag="$$OptionalFilters$$">
-				<queryFilter>
-					<![CDATA[
-						AND (v.value $$operator$$ $$valueRange$$ $$rangeOperator$$ $$comparedValue$$) $$OptionalFilters$$
-					]]>
-				</queryFilter>
-				<filterAttributes>
-					<attribute id="operator:eq" tag="$$operator$$">=</attribute>
-					<attribute id="operator:nq" tag="$$operator$$">!=</attribute>
-					<attribute id="operator:lt" tag="$$operator$$"><![CDATA[<]]></attribute>
-					<attribute id="operator:gt" tag="$$operator$$">></attribute>
-					<attribute id="operator:lteq" tag="$$operator$$"><![CDATA[<=]]></attribute>
-					<attribute id="operator:gteq" tag="$$operator$$">>=</attribute>
-					<attribute id="valueRange:min" tag="$$valueRange$$">v.referenceRangeMin</attribute>
-					<attribute id="valueRange:max" tag="$$valueRange$$">v.referenceRangeMax</attribute>
-					<attribute id="value" tag="$$comparedValue$$"></attribute>
-					<attribute id="rangeOperator:add" tag="$$rangeOperator$$">+</attribute>
-					<attribute id="rangeOperator:sub" tag="$$rangeOperator$$">-</attribute>
-					<attribute id="rangeOperator:mul" tag="$$rangeOperator$$">*</attribute>
-					<attribute id="rangeOperator:div" tag="$$rangeOperator$$">/</attribute>
-				</filterAttributes>				
-			</OptionalFilter>						
-		</OptionalStructure>
-		<OptionalStructure id="valueFilterUnits">
-			<OptionalHeaderAttributes id="valueFilterUnits" tag="$$optionalAttributes$$">, v.units AS units $$optionalAttributes$$</OptionalHeaderAttributes>
-			<optionalTable id="valueFilterUnits" tag = "$$OptionalStructures$$">			
-				<![CDATA[
-					INNER JOIN actobservationvalues v ON (a.id = v.id)
-					$$OptionalStructures$$
-				]]>		
-			</optionalTable>
-			<OptionalFilter id="valueFilterUnits" tag="$$OptionalFilters$$">
-				<queryFilter>
-					<![CDATA[
-						AND (v.units = "$$comparedValueUnits$$") $$OptionalFilters$$
-					]]>
-				</queryFilter>
-				<filterAttributes>
-					<attribute id="valueUnits" tag="$$comparedValueUnits$$"></attribute>
-				</filterAttributes>				
-			</OptionalFilter>						
-		</OptionalStructure>
-		<OptionalStructure id="interpretationCode">
-			<OptionalHeaderAttributes id="interpretationCode" tag="$$optionalAttributes$$">, i.code AS interpretationCode $$optionalAttributes$$</OptionalHeaderAttributes>
-			<optionalTable id="interpretationCode" tag = "$$OptionalStructures$$">			
-				<![CDATA[
-					INNER JOIN actobservationinterpretationcode i ON (a.id = i.id)
-					$$OptionalStructures$$
-				]]>		
-			</optionalTable>
-			<OptionalFilter id="interpretationCode" tag="$$OptionalFilters$$">
-				<queryFilter>
-					<![CDATA[
-						AND (i.code = "%Observation_interpretationCode%") $$OptionalFilters$$
-					]]>
+			<OptionalFilter id="role" tag="$$OptionalFilters$$">
+				<queryFilter>		
+					$$OptionalFilters$$
 				</queryFilter>	
 				<filterAttributes>
-					<attribute id="value" tag="%Observation_interpretationCode%"></attribute>
-				</filterAttributes>
-			</OptionalFilter>						
-		</OptionalStructure>
-		<OptionalStructure id="methodCode">
-			<OptionalHeaderAttributes id="methodCode" tag="$$optionalAttributes$$">, m.code AS methodCode, m.title AS methodCodeTitle $$optionalAttributes$$</OptionalHeaderAttributes>
-			<optionalTable id="methodCode" tag = "$$OptionalStructures$$">			
-				<![CDATA[
-					INNER JOIN actmethodcode m ON (a.id = m.id)
-					$$OptionalStructures$$
-				]]>		
-			</optionalTable>
-			<OptionalFilter id="methodCode" tag="$$OptionalFilters$$">
-				<queryFilter>
-					<![CDATA[
-						AND (m.code IN (isAnySubclassOf(%Observation_methodCode%))) $$OptionalFilters$$
-					]]>
-				</queryFilter>	
-				<filterAttributes>
-					<attribute id="value" tag="%Observation_methodCode%"></attribute>
-				</filterAttributes>
-			</OptionalFilter>						
-		</OptionalStructure>
-		<OptionalStructure id="targetSiteCode">
-			<OptionalHeaderAttributes id="targetSiteCode" tag="$$optionalAttributes$$">, t.code AS targetSiteCode, t.title AS targetSiteCodeTitle $$optionalAttributes$$</OptionalHeaderAttributes>
-			<optionalTable id="targetSiteCode" tag = "$$OptionalStructures$$">			
-				<![CDATA[
-					INNER JOIN acttargetsitecode t ON (a.id = t.id)
-					$$OptionalStructures$$
-				]]>		
-			</optionalTable>
-			<OptionalFilter id="targetSiteCode" tag="$$OptionalFilters$$">
-				<queryFilter>
-					<![CDATA[
-						AND (t.code IN (isAnySubclassOf(%Observation_targetSiteCode%))) $$OptionalFilters$$
-					]]>
-				</queryFilter>	
-				<filterAttributes>
-					<attribute id="value" tag="%Observation_targetSiteCode%"></attribute>
 				</filterAttributes>
 			</OptionalFilter>						
 		</OptionalStructure>
 		<OptionalStructure id="entity">
-			<OptionalHeaderAttributes id="entity" tag="$$optionalAttributes$$">, e.id AS entityId, e.classCode AS entityClassCode, e.determinerCode AS entityDeterminerCode, e.code AS entityCode, e.title AS entityTitle $$optionalAttributes$$</OptionalHeaderAttributes>
+			<OptionalHeaderAttributes id="entity" tag="$$optionalAttributes$$">, e.classCode AS entityClassCode, e.determinerCode AS entityDeterminerCode, e.codeVocId AS entityCodeVocId, e.title AS entityTitle $$optionalAttributes$$</OptionalHeaderAttributes>
 			<optionalTable id="entity" tag = "$$OptionalStructures$$">			
-				<![CDATA[
-					INNER JOIN participation p2 ON (a.id = p2.actId)
-					INNER JOIN entity e ON (p2.entityId = e.id)
-					$$OptionalStructures$$
-				]]>		
+				$$OptionalStructures$$	
 			</optionalTable>
 			<OptionalFilter id="entity" tag="$$OptionalFilters$$">
-				<queryFilter>
-					<![CDATA[
-						AND (e.code != '337915000' AND e.code IN (isAnySubclassOf(%Entity_code%))) $$OptionalFilters$$
-					]]>
+				<queryFilter>		
+					$$OptionalFilters$$
 				</queryFilter>	
 				<filterAttributes>
-					<attribute id="value" tag="%Entity_code%"></attribute>
 				</filterAttributes>
 			</OptionalFilter>						
 		</OptionalStructure>

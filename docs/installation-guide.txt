@@ -80,10 +80,8 @@ Whenever the Data Push Service is used Mirth Connect should be running.
 
 Terminology Service is needed in order to translate concepts which are not into the Core Dataset Service. 
 
-Create a new schema on your SQL server called "metathesaurus".
-	CREATE SCHEMA metathesaurus;
-
-Execute file "metathesaurus_schema.sql" on "metathesaurus".
+Execute file "metathesaurus_schema.sql" on mysql server.
+	SOURCE metathesaurus_schema.sql
 
 Download UMLS from http://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html (Active release files).
 
@@ -102,9 +100,9 @@ http://localhost:8080/TerminologyService/services/TerminologyService?wsdl
  
 3. CREATE CDM
 
-Create two new schemas on your SQL server. One called “testcv” and the other called “normalized_testcv”.
-
-Execute file “dump_testCV.sql” on “testcv” database and “dump_normalized_testCV.sql” on “normalized_ testcv”. The first file creates a non-normalized database, and the second one creates a normalized one.
+Execute file “dump_testCV.sql” and “dump_normalized_testCV.sql” on mysql server. The first file creates a non-normalized database, and the second one creates a normalized one.
+	SOURCE dump_testCV.sql;
+	SOURCE dump_normalized_testCV.sql;
 
 Create two new schemas on your SQL server. One called "testcv_deleted" and the other called "normalized_testcv_deleted".
 

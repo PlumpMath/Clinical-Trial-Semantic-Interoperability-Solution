@@ -104,14 +104,11 @@ Execute file “dump_testCV.sql” and “dump_normalized_testCV.sql” on mysql
 	SOURCE dump_testCV.sql;
 	SOURCE dump_normalized_testCV.sql;
 
-Create two new schemas on your SQL server. One called "testcv_deleted" and the other called "normalized_testcv_deleted".
-	CREATE testcv_deleted;
-	CREATE normalized_testcv_deleted;
 
-Execute file "testCV_deleted.sql" on "testcv_deleted" and "normalized_testcv_deleted". Both databases are used to store deleted clinical acts due to overwriting. 
-	USE testcv_deleted;
+Execute file "testCV_deleted.sql" and "normalized_testCV_deleted.sql" on mysql server. Both databases are used to store deleted clinical acts due to overwriting. 
+	SOURCE testCV_deleted.sql;
+	SOURCE normalized_testCV_deleted.sql
 	
-
 Execute “translations.sql” on mysql server. This database is used by Data Push Service.
 	SOURCE translations.sql
 

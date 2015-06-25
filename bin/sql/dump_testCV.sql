@@ -15,6 +15,10 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+create schema testcv;
+
+use testcv;
+
 --
 -- Table structure for table `act`
 --
@@ -824,7 +828,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`testCV`@`%` SQL SECURITY DEFINER */
+
 /*!50001 VIEW `v_exposure` AS select `a`.`id` AS `id`,`a`.`classCode` AS `classCode`,`a`.`subClassCode` AS `subClassCode`,`a`.`moodCode` AS `moodCode`,`a`.`code` AS `code`,`a`.`codeVocId` AS `codeVocId`,`a`.`codeOrig` AS `codeOrig`,`a`.`codeOrigVocId` AS `codeOrigVocId`,`a`.`actionNegationInd` AS `actionNegationInd`,`a`.`title` AS `title`,`a`.`text` AS `text`,`a`.`statusCode` AS `statusCode`,`a`.`effectiveTime_start` AS `effectiveTime_start`,`a`.`effectiveTime_end` AS `effectiveTime_end`,`a`.`activityTime` AS `activityTime`,`a`.`availabilityTime` AS `availabilityTime`,`a`.`creationTime` AS `creationTime`,`a`.`modificationTime` AS `modificationTime`,`a`.`uncertaintyCode` AS `uncertaintyCode`,`ar`.`idB` AS `clinicalTrialId`,`e`.`routeCode` AS `routeCode`,`e`.`exposureLevel` AS `exposureLevel`,`e`.`exposureModeCode` AS `exposureModeCode` from ((`act` `a` left join `exposure` `e` on((`a`.`id` = `e`.`id`))) left join `actrelationship` `ar` on((`ar`.`idA` = `a`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -843,7 +847,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`testCV`@`%` SQL SECURITY DEFINER */
+
 /*!50001 VIEW `v_livingsubject` AS select `e`.`id` AS `id`,`e`.`classCode` AS `classCode`,`e`.`determinerCode` AS `determinerCode`,`e`.`code` AS `code`,`e`.`codeVocId` AS `codeVocId`,`e`.`codeOrig` AS `codeOrig`,`e`.`codeOrigVocId` AS `codeOrigVocId`,`e`.`title` AS `title`,`e`.`quantity` AS `quantity`,`e`.`name` AS `name`,`e`.`desc` AS `desc`,`e`.`statusCode` AS `statusCode`,`l`.`administrativeGenderCode` AS `administrativeGenderCode`,`e`.`creationTime` AS `creationTime`,`e`.`modificationTime` AS `modificationTime`,`l`.`birthTime` AS `birthTime`,`l`.`birthTimeTolerance` AS `birthTimeTolerance`,`l`.`deceasedInd` AS `deceasedInd`,`l`.`deceasedTime` AS `deceasedTime` from (`entity` `e` left join `livingsubject` `l` on((`e`.`id` = `l`.`id`))) where (`e`.`classCode` = 'PSN') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -862,7 +866,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`testCV`@`%` SQL SECURITY DEFINER */
+
 /*!50001 VIEW `v_observation` AS select `a`.`id` AS `id`,`a`.`classCode` AS `classCode`,`a`.`subClassCode` AS `subClassCode`,`a`.`moodCode` AS `moodCode`,`a`.`code` AS `code`,`a`.`codeVocId` AS `codeVocId`,`a`.`codeOrig` AS `codeOrig`,`a`.`codeOrigVocId` AS `codeOrigVocId`,`a`.`actionNegationInd` AS `actionNegationInd`,`a`.`title` AS `title`,`a`.`text` AS `text`,`a`.`statusCode` AS `statusCode`,`a`.`effectiveTime_start` AS `effectiveTime_start`,`a`.`effectiveTime_end` AS `effectiveTime_end`,`a`.`activityTime` AS `activityTime`,`a`.`availabilityTime` AS `availabilityTime`,`a`.`creationTime` AS `creationTime`,`a`.`modificationTime` AS `modificationTime`,`a`.`uncertaintyCode` AS `uncertaintyCode`,`o`.`valueNegationInd` AS `valueNegationInd`,`ar`.`idB` AS `clinicalTrialId`,`aov`.`value` AS `value`,`aov`.`valueType` AS `valueType`,`aov`.`units` AS `units`,`aov`.`code` AS `valueCode`,`aov`.`codeVocId` AS `valueCodeVocId`,`aov`.`codeOrig` AS `valueCodeOrig`,`aov`.`codeOrigVocId` AS `valueCodeOrigVocId`,`aov`.`title` AS `valueTitle`,`aov`.`referenceRangeMin` AS `referenceRangeMin`,`aov`.`referenceRangeMax` AS `referenceRangeMax`,`aoic`.`code` AS `interpretationCode`,`aoic`.`title` AS `interpretationCodeTitle`,`aoic`.`codeVocId` AS `interpretationCodeVocId`,`aoic`.`codeOrig` AS `interpretationCodeOrig`,`aoic`.`codeOrigVocId` AS `interpretationCodeOrigVocId`,`amc`.`code` AS `methodCode`,`amc`.`title` AS `methodCodeTitle`,`amc`.`codeVocId` AS `methodCodeVocId`,`amc`.`codeOrig` AS `methodCodeOrig`,`amc`.`codeOrigVocId` AS `methodCodeOrigVocId`,`atsc`.`code` AS `targetSiteCode`,`atsc`.`title` AS `targetSiteCodeTitle`,`atsc`.`codeVocId` AS `targetSiteCodeVocId`,`atsc`.`codeOrig` AS `targetSiteCodeOrig`,`atsc`.`codeOrigVocId` AS `targetSiteCodeOrigVocId` from ((((((`act` `a` left join `observation` `o` on((`a`.`id` = `o`.`id`))) left join `actrelationship` `ar` on((`ar`.`idA` = `a`.`id`))) left join `actobservationvalues` `aov` on((`o`.`id` = `aov`.`id`))) left join `actobservationinterpretationcode` `aoic` on((`aoic`.`id` = `o`.`id`))) left join `acttargetsitecode` `atsc` on((`atsc`.`id` = `o`.`id`))) left join `actmethodcode` `amc` on((`amc`.`id` = `o`.`id`))) where (`a`.`classCode` = 'OBS') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -881,7 +885,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`testCV`@`%` SQL SECURITY DEFINER */
+
 /*!50001 VIEW `v_person` AS select `e`.`id` AS `id`,`e`.`classCode` AS `classCode`,`e`.`determinerCode` AS `determinerCode`,`e`.`code` AS `code`,`e`.`codeVocId` AS `codeVocId`,`e`.`codeOrig` AS `codeOrig`,`e`.`codeOrigVocId` AS `codeOrigVocId`,`e`.`title` AS `title`,`e`.`quantity` AS `quantity`,`e`.`name` AS `name`,`e`.`desc` AS `desc`,`e`.`statusCode` AS `statusCode`,`l`.`administrativeGenderCode` AS `administrativeGenderCode`,`e`.`creationTime` AS `creationTime`,`e`.`modificationTime` AS `modificationTime`,`l`.`birthTime` AS `birthTime`,`l`.`birthTimeTolerance` AS `birthTimeTolerance`,`l`.`deceasedInd` AS `deceasedInd`,`l`.`deceasedTime` AS `deceasedTime`,`p`.`raceCode` AS `raceCode`,`p`.`name` AS `personName`,`p`.`surname` AS `personSurname` from ((`entity` `e` left join `livingsubject` `l` on((`e`.`id` = `l`.`id`))) left join `person` `p` on((`p`.`id` = `e`.`id`))) where (`e`.`classCode` = 'PSN') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -900,7 +904,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`testCV`@`%` SQL SECURITY DEFINER */
+
 /*!50001 VIEW `v_procedure` AS select `a`.`id` AS `id`,`a`.`classCode` AS `classCode`,`a`.`subClassCode` AS `subClassCode`,`a`.`moodCode` AS `moodCode`,`a`.`code` AS `code`,`a`.`codeVocId` AS `codeVocId`,`a`.`codeOrig` AS `codeOrig`,`a`.`codeOrigVocId` AS `codeOrigVocId`,`a`.`actionNegationInd` AS `actionNegationInd`,`a`.`title` AS `title`,`a`.`text` AS `text`,`a`.`statusCode` AS `statusCode`,`a`.`effectiveTime_start` AS `effectiveTime_start`,`a`.`effectiveTime_end` AS `effectiveTime_end`,`a`.`activityTime` AS `activityTime`,`a`.`availabilityTime` AS `availabilityTime`,`a`.`creationTime` AS `creationTime`,`a`.`modificationTime` AS `modificationTime`,`a`.`uncertaintyCode` AS `uncertaintyCode`,`ar`.`idB` AS `clinicalTrialId`,`apasc`.`code` AS `approachSiteCode`,`apasc`.`title` AS `approachSiteCodeTitle`,`apasc`.`codeVocId` AS `approachSiteCodeVocId`,`apasc`.`codeOrig` AS `approachSiteCodeOrig`,`apasc`.`codeOrigVocId` AS `approachSiteCodeOrigVocId`,`amc`.`code` AS `methodCode`,`amc`.`title` AS `methodCodeTitle`,`amc`.`codeVocId` AS `methodCodeVocId`,`amc`.`codeOrig` AS `methodCodeOrig`,`amc`.`codeOrigVocId` AS `methodCodeOrigVocId`,`atsc`.`code` AS `targetSiteCode`,`atsc`.`title` AS `targetSiteCodeTitle`,`atsc`.`codeVocId` AS `targetSiteCodeVocId`,`atsc`.`codeOrig` AS `targetSiteCodeOrig`,`atsc`.`codeOrigVocId` AS `targetSiteCodeOrigVocId` from (((((`act` `a` left join `procedures` `p` on((`p`.`id` = `a`.`id`))) left join `actrelationship` `ar` on((`ar`.`idA` = `a`.`id`))) left join `actprocedureapproachsitecode` `apasc` on((`apasc`.`id` = `p`.`id`))) left join `acttargetsitecode` `atsc` on((`atsc`.`id` = `p`.`id`))) left join `actmethodcode` `amc` on((`p`.`id` = `amc`.`id`))) where (`a`.`classCode` = 'PROC') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -919,7 +923,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`testCV`@`%` SQL SECURITY DEFINER */
+
 /*!50001 VIEW `v_substanceadministration` AS select `a`.`id` AS `id`,`a`.`classCode` AS `classCode`,`a`.`subClassCode` AS `subClassCode`,`a`.`moodCode` AS `moodCode`,`a`.`code` AS `code`,`a`.`codeVocId` AS `codeVocId`,`a`.`codeOrig` AS `codeOrig`,`a`.`codeOrigVocId` AS `codeOrigVocId`,`a`.`actionNegationInd` AS `actionNegationInd`,`a`.`title` AS `title`,`a`.`text` AS `text`,`a`.`statusCode` AS `statusCode`,`a`.`effectiveTime_start` AS `effectiveTime_start`,`a`.`effectiveTime_end` AS `effectiveTime_end`,`a`.`activityTime` AS `activityTime`,`a`.`availabilityTime` AS `availabilityTime`,`a`.`creationTime` AS `creationTime`,`a`.`modificationTime` AS `modificationTime`,`a`.`uncertaintyCode` AS `uncertaintyCode`,`ar`.`idB` AS `clinicalTrialId`,`apasc`.`code` AS `approachSiteCode`,`apasc`.`title` AS `approachSiteCodeTitle`,`apasc`.`codeVocId` AS `approachSiteCodeVocId`,`apasc`.`codeOrig` AS `approachSiteCodeOrig`,`apasc`.`codeOrigVocId` AS `approachSiteCodeOrigVocId`,`amc`.`code` AS `methodCode`,`amc`.`title` AS `methodCodeTitle`,`amc`.`codeVocId` AS `methodCodeVocId`,`amc`.`codeOrig` AS `methodCodeOrig`,`amc`.`codeOrigVocId` AS `methodCodeOrigVocId`,`atsc`.`code` AS `targetSiteCode`,`atsc`.`title` AS `targetSiteCodeTitle`,`atsc`.`codeVocId` AS `targetSiteCodeVocId`,`atsc`.`codeOrig` AS `targetSiteCodeOrig`,`atsc`.`codeOrigVocId` AS `targetSiteCodeOrigVocId`,`s`.`routeCode` AS `routeCode`,`s`.`routeCodeVocId` AS `routeCodeVocId`,`s`.`routeCodeOrig` AS `routeCodeOrig`,`s`.`routeCodeOrigVocId` AS `routeCodeOrigVocId`,`s`.`routeCodeTitle` AS `routeCodeTitle`,`s`.`doseQuantity` AS `doseQuantity`,`s`.`doseQuantityUnits` AS `doseQuantityUnits`,`s`.`rateQuantity` AS `rateQuantity`,`s`.`rateQuantityUnits` AS `rateQuantityUnits`,`s`.`doseCheckQuantity` AS `doseCheckQuantity`,`s`.`doseCheckQuantityUnits` AS `doseCheckQuantityUnits`,`s`.`periodIntervalTime` AS `periodIntervalTime`,`s`.`periodIntervalUnits` AS `periodIntervalUnits` from ((((((`act` `a` left join `procedures` `p` on((`p`.`id` = `a`.`id`))) left join `substanceadministration` `s` on((`s`.`id` = `p`.`id`))) left join `actrelationship` `ar` on((`ar`.`idA` = `a`.`id`))) left join `actprocedureapproachsitecode` `apasc` on((`apasc`.`id` = `p`.`id`))) left join `acttargetsitecode` `atsc` on((`atsc`.`id` = `p`.`id`))) left join `actmethodcode` `amc` on((`p`.`id` = `amc`.`id`))) where (`a`.`classCode` = 'SBADM') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;

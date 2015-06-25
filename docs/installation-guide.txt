@@ -102,9 +102,9 @@ http://localhost:8080/TerminologyService/services/TerminologyService?wsdl
  
 3. CREATE CDM
 
-Create two new schemas on your SQL server. One called “testcv” and the other called “normalized_testcv”.
-
-Execute file “dump_testCV.sql” on “testcv” database and “dump_normalized_testCV.sql” on “normalized_ testcv”. The first file creates a non-normalized database, and the second one creates a normalized one.
+Execute file “dump_testCV.sql” and “dump_normalized_testCV.sql” on your mysql server. The first file creates a non-normalized database, and the second one creates a normalized one.
+	SOURCE dump_testCV.sql;
+	SOURCE dump_normalized_testCV.sql;
 
 Create two new schemas on your SQL server. One called "testcv_deleted" and the other called "normalized_testcv_deleted".
 

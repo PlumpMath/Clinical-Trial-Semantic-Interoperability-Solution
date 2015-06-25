@@ -1,3 +1,7 @@
+CREATE SCHEMA metathesaurus;
+
+USE metathesaurus;
+
 CREATE TABLE `mrconso` (
   `CUI` char(8) NOT NULL,
   `LAT` char(3) NOT NULL,

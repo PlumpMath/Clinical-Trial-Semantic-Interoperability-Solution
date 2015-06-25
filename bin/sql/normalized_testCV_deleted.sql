@@ -1,6 +1,6 @@
-CREATE SCHEMA testcv_deleted;
+CREATE SCHEMA normalized_testcv_deleted;
 
-USE testcv_deleted; 
+USE normalized_testcv_deleted; 
 
 delimiter $$
 

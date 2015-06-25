@@ -1,4 +1,6 @@
-delimiter $$
+CREATE SCHEMA translations;
+
+USE translations;
 
 CREATE TABLE `translation` (
   `codeOrig` varchar(30) NOT NULL,

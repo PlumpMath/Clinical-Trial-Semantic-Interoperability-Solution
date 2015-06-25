@@ -109,10 +109,10 @@ Execute file "testCV_deleted.sql" and "normalized_testCV_deleted.sql" on mysql s
 	SOURCE testCV_deleted.sql;
 	SOURCE normalized_testCV_deleted.sql;
 	
-Execute “translations.sql” on mysql server. This database is used by Data Push Service.
+Execute file “translations.sql” on mysql server. This database is used by Data Push Service.
 	SOURCE translations.sql;
 
-Execute “normalization_errors.sql”. This database is used by Data Push Service.
+Execute file “normalization_errors.sql”. This database is used by Data Push Service.
 	SOURCE normalization_errors.sql;
 
 4. CoreDataset service deployment and generation

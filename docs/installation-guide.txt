@@ -74,7 +74,16 @@ Mirth Connect is needed in order to do the ETL process to store HL7 v3 messages 
 The ETL process is now deployed and ready to be used by the Data Push Service.
 Data Push Service has a stub to this url http://localhost:8091/services/MirthConnectWS. So it is important not to change name and port.
 
-Whenever the Data Push Service is used Mirth Connect should be running.  
+Whenever the Data Push Service is used Mirth Connect should be running. To start Mirth Connect automatically on boot, a script must be added on /etc/init.d. Create a file called "mirth".
+	sudo vi mirth
+Add the following line into the script:
+	/usr/local/mirthconnect/mcservice start > /dev/null 2>&1
+Change permissions:
+	sudo chmod +x /etc/init.d/mirth
+	sudo chown root:root /etc/init.d/mirth
+Start on boot:
+	sudo update-rc.d mirth defaults
+	sudo update-rc.d mirth enable
 
 2. UMLS-based Terminology Service
 

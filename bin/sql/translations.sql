@@ -7,4 +7,4 @@ CREATE TABLE `translation` (
   `codeOrigVocId` varchar(30) NOT NULL,
   `code` varchar(50) DEFAULT NULL,
   `codeVocId` varchar(30) DEFAULT NULL,
-  PRIMARY KEY (`codeOrig`,`codeOrigVocId`) )$$
+  PRIMARY KEY (`codeOrig`,`codeOrigVocId`) )

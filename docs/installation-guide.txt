@@ -107,12 +107,13 @@ Execute file “dump_testCV.sql” and “dump_normalized_testCV.sql” on mysql
 
 Execute file "testCV_deleted.sql" and "normalized_testCV_deleted.sql" on mysql server. Both databases are used to store deleted clinical acts due to overwriting. 
 	SOURCE testCV_deleted.sql;
-	SOURCE normalized_testCV_deleted.sql
+	SOURCE normalized_testCV_deleted.sql;
 	
-Execute “translations.sql” on mysql server. This database is used by Data Push Service.
-	SOURCE translations.sql
+Execute file “translations.sql” on mysql server. This database is used by Data Push Service.
+	SOURCE translations.sql;
 
-Create a new schema on your SQL server called “normalization_errors” and execute “normalization_errors.sql”. This database is used by Data Push Service.
+Execute file “normalization_errors.sql”. This database is used by Data Push Service.
+	SOURCE normalization_errors.sql;
 
 4. CoreDataset service deployment and generation
 
